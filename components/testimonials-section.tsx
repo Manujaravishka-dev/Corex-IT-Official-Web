@@ -7,6 +7,7 @@ import { useInView } from "@/hooks/use-in-view";
 import { Star, Quote, Award, User } from "lucide-react";
 import { collection, query, where, orderBy, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { reportPublicFirestoreError } from "@/lib/firestore-errors";
 import { COLLECTIONS, type Testimonial } from "@/lib/firestore-types";
 
 function CustomerAvatar({ name, imageUrl }: { name: string; imageUrl?: string }) {
@@ -81,7 +82,7 @@ export function TestimonialsSection() {
           setTestimonials(items);
         }
       } catch (err) {
-        console.error("Failed to load testimonials", err);
+        reportPublicFirestoreError(`${COLLECTIONS.testimonials} (status == published)`, "list", err);
         // Hint: firestore.rules must allow public read where status=="published" (see firestore.rules)
         // Check that collection is 'testimonials' and docs have status="published"
         if (!cancelled) setTestimonials([]);

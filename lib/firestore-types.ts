@@ -95,6 +95,7 @@ export const COLLECTIONS = {
   websiteImages: "websiteImages",
   blogs: "blogs",
   companyHighlights: "company_highlights",
+  clientBrands: "client_brands",
 } as const;
 
 export const SETTINGS_DOC_ID = "company";
@@ -128,6 +129,19 @@ export type Blog = {
   description: string;
   category: string;
   createdAt: Timestamp | Date | string;
+};
+
+// client_brands collection — managed via Admin > Client Brands, consumed by public Home page marquee
+export type ClientBrand = {
+  id: string;
+  name: string;
+  logoUrl: string;
+  logoPublicId?: string;
+  websiteUrl?: string;
+  isActive: boolean;
+  displayOrder: number;
+  createdAt: Timestamp | Date | string;
+  updatedAt: Timestamp | Date | string;
 };
 
 // Curated defaults for the Admin Blog form dropdown. Extend this array to add categories.
@@ -171,5 +185,16 @@ export const DEFAULT_COMPANY_HIGHLIGHTS: Omit<CompanyHighlights, "updatedAt"> = 
   yearsExperience: 5,
   yearsSuffix: "+",
 };
+
+// Fallback/sample client brands — used as placeholder data when Firestore has no brands.
+// These are temporary and should be replaced with real brands via the Admin panel.
+export const DEFAULT_CLIENT_BRANDS: Omit<ClientBrand, "id" | "createdAt" | "updatedAt">[] = [
+  { name: "Acme Corporation", logoUrl: "", websiteUrl: "https://example.com", isActive: true, displayOrder: 1 },
+  { name: "Globex Inc", logoUrl: "", websiteUrl: "https://example.com", isActive: true, displayOrder: 2 },
+  { name: "Initech", logoUrl: "", websiteUrl: "https://example.com", isActive: true, displayOrder: 3 },
+  { name: "Umbrella Corp", logoUrl: "", websiteUrl: "https://example.com", isActive: true, displayOrder: 4 },
+  { name: "Wayne Enterprises", logoUrl: "", websiteUrl: "https://example.com", isActive: true, displayOrder: 5 },
+  { name: "Stark Industries", logoUrl: "", websiteUrl: "https://example.com", isActive: true, displayOrder: 6 },
+];
 
 

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useInView } from "@/hooks/use-in-view";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 import { db } from "@/lib/firebase";
+import { reportPublicFirestoreError } from "@/lib/firestore-errors";
 import { doc, onSnapshot } from "firebase/firestore";
 import {
   COLLECTIONS,
@@ -104,7 +105,7 @@ export function CompanyHighlightsSection() {
         setLoading(false);
       },
       (err) => {
-        console.error("[company-highlights] Failed to load highlights from Firestore, showing default values:", err);
+        reportPublicFirestoreError(`${COLLECTIONS.companyHighlights}/${COMPANY_HIGHLIGHTS_DOC_ID}`, "get", err);
         setStats(resolveStats());
         setLoading(false);
       }

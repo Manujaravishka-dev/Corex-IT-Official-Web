@@ -7,6 +7,7 @@ import { Menu, X, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { reportPublicFirestoreError } from "@/lib/firestore-errors";
 import { COLLECTIONS, SETTINGS_DOC_ID } from "@/lib/firestore-types";
 import { defaultCompanySettings } from "@/lib/site-settings";
 
@@ -43,7 +44,9 @@ export function Navbar() {
           if (data.email) setCompanyEmail(data.email);
           if (data.address) setCompanyAddress(data.address);
         }
-      } catch { /* keep defaults */ }
+      } catch (err) {
+        reportPublicFirestoreError(`${COLLECTIONS.settings}/${SETTINGS_DOC_ID}`, "get", err);
+      }
     }
     load();
     return () => { cancelled = true; };

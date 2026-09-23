@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { reportPublicFirestoreError } from "@/lib/firestore-errors";
 import { COLLECTIONS, SETTINGS_DOC_ID, type CompanySettings } from "@/lib/firestore-types";
 import { defaultCompanySettings } from "@/lib/site-settings";
 
@@ -76,7 +77,8 @@ export function Footer() {
         if (!cancelled && snap.exists()) {
           setSettings({ ...defaultCompanySettings, ...(snap.data() as CompanySettings) });
         }
-      } catch {
+      } catch (err) {
+        reportPublicFirestoreError(`${COLLECTIONS.settings}/${SETTINGS_DOC_ID}`, "get", err);
         // keep defaults for public visitors
       }
     }

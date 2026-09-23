@@ -4,25 +4,41 @@
       "collectionGroup": "testimonials",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "DESCENDING"}
       ]
     },
     {
       "collectionGroup": "websiteImages",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "category", "order": "ASCENDING" },
-        { "fieldPath": "isActive", "order": "ASCENDING" },
-        { "fieldPath": "sortOrder", "order": "ASCENDING" }
+        {"fieldPath": "category", "order": "ASCENDING"},
+        {"fieldPath": "isActive", "order": "ASCENDING"},
+        {"fieldPath": "sortOrder", "order": "ASCENDING"}
       ]
     },
     {
       "collectionGroup": "websiteImages",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "category", "order": "ASCENDING" },
-        { "fieldPath": "sortOrder", "order": "ASCENDING" }
+        {"fieldPath": "category", "order": "ASCENDING"},
+        {"fieldPath": "sortOrder", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "client_brands",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "isActive", "order": "ASCENDING"},
+        {"fieldPath": "displayOrder", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "company_highlights",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "isActive", "order": "ASCENDING"},
+        {"fieldPath": "sortOrder", "order": "ASCENDING"}
       ]
     }
   ],

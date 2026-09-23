@@ -24,6 +24,7 @@ import {
   SETTINGS_DOC_ID,
   COMPANY_HIGHLIGHTS_DOC_ID,
   DEFAULT_COMPANY_HIGHLIGHTS,
+  DEFAULT_CLIENT_BRANDS,
   type CompanyHighlights,
   type Testimonial,
   type TestimonialInvite,
@@ -32,12 +33,13 @@ import {
   type WebsiteImage,
   type WebsiteImageCategory,
   type Blog,
+  type ClientBrand,
   BLOG_CATEGORIES,
 } from "@/lib/firestore-types";
 import { defaultCompanySettings } from "@/lib/site-settings";
 
 // Types for admin UI
-type Tab = "dashboard" | "testimonials" | "messages" | "images" | "blogs" | "company-highlights";
+type Tab = "dashboard" | "testimonials" | "messages" | "images" | "blogs" | "company-highlights" | "client-brands" | "settings";
 
 // Company Highlights form state — mirrors the company_highlights/main document
 type CompanyHighlightsForm = {
@@ -200,6 +202,24 @@ export default function AdminDashboard() {
   const [bSuccess, setBSuccess] = useState<string | null>(null);
   const [blogCoverUploading, setBlogCoverUploading] = useState(false);
 
+  // Client Brands state
+  const [clientBrands, setClientBrands] = useState<ClientBrand[]>([]);
+  const [brandsLoading, setBrandsLoading] = useState(true);
+  const [brandEditing, setBrandEditing] = useState<ClientBrand | null>(null);
+  const [brandForm, setBrandForm] = useState({
+    name: "",
+    logoUrl: "",
+    websiteUrl: "",
+    isActive: true,
+    displayOrder: 0,
+  });
+  const [brandLogoFile, setBrandLogoFile] = useState<File | null>(null);
+  const [brandLogoPreview, setBrandLogoPreview] = useState<string | null>(null);
+  const [brandSubmitting, setBrandSubmitting] = useState(false);
+  const [brandError, setBrandError] = useState<string | null>(null);
+  const [brandSuccess, setBrandSuccess] = useState<string | null>(null);
+  const [brandLogoUploading, setBrandLogoUploading] = useState(false);
+
   // Auth guard — reuse existing Firebase Auth instance, wait for initialization
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -253,6 +273,22 @@ export default function AdminDashboard() {
       setHighlightError(err instanceof Error ? err.message : "Failed to load company highlights.");
     } finally {
       setHighlightLoading(false);
+    }
+  };
+
+  // Client Brands — load all brands from the client_brands collection.
+  const fetchClientBrands = async () => {
+    setBrandsLoading(true);
+    setBrandError(null);
+    try {
+      const q = query(collection(db, COLLECTIONS.clientBrands), orderBy("displayOrder", "asc"));
+      const snap = await getDocs(q);
+      setClientBrands(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<ClientBrand, "id">) })));
+    } catch (err) {
+      console.error("Failed to load client brands (admin)", err);
+      setBrandError(err instanceof Error ? err.message : "Failed to load client brands.");
+    } finally {
+      setBrandsLoading(false);
     }
   };
 
@@ -310,7 +346,14 @@ export default function AdminDashboard() {
       console.error("Failed to load blogs (admin)", err);
     }
 
-// 5) Invites via secure server API (Admin SDK) — additive only, must NOT block existing panel
+    // 6) Client Brands
+    try {
+      await fetchClientBrands();
+    } catch (err) {
+      console.error("Failed to load client brands (admin)", err);
+    }
+
+    // 7) Invites via secure server API (Admin SDK) — additive only, must NOT block existing panel
     // Uses existing Firebase Auth instance; waits for onAuthStateChanged (authUser) — never localStorage/URL
     // Sends Authorization: Bearer <ID_TOKEN> exactly as required
     try {
@@ -400,6 +443,9 @@ export default function AdminDashboard() {
     setTab(id);
     if (id === "company-highlights") {
       void fetchCompanyHighlights();
+    }
+    if (id === "client-brands") {
+      void fetchClientBrands();
     }
   };
 
@@ -1215,6 +1261,166 @@ export default function AdminDashboard() {
     }
   };
 
+  // Client Brands CRUD
+  const resetBrandForm = () => {
+    setBrandEditing(null);
+    setBrandForm({ name: "", logoUrl: "", websiteUrl: "", isActive: true, displayOrder: clientBrands.length + 1 });
+    setBrandLogoFile(null);
+    setBrandLogoPreview(null);
+    setBrandError(null);
+    setBrandSuccess(null);
+  };
+
+  const handleEditBrand = (brand: ClientBrand) => {
+    setBrandEditing(brand);
+    setBrandForm({
+      name: brand.name,
+      logoUrl: brand.logoUrl,
+      websiteUrl: brand.websiteUrl || "",
+      isActive: brand.isActive,
+      displayOrder: brand.displayOrder,
+    });
+    setBrandLogoPreview(brand.logoUrl);
+    setBrandLogoFile(null);
+    setBrandError(null);
+    setBrandSuccess(null);
+    setTab("client-brands");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDeleteBrand = async (id: string, logoPublicId?: string) => {
+    if (!confirm("Delete this brand?")) return;
+    try {
+      if (logoPublicId) {
+        const res = await fetch("/api/admin/delete-image", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${(await auth.currentUser?.getIdToken()) || ""}`,
+          },
+          body: JSON.stringify({ publicId: logoPublicId, documentId: id }),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          console.error("[delete-brand] Cloudinary delete failed:", errData);
+        }
+      }
+      await deleteDoc(doc(db, COLLECTIONS.clientBrands, id));
+      setClientBrands((prev) => prev.filter((b) => b.id !== id));
+      setBrandSuccess("Brand deleted successfully.");
+      setTimeout(() => setBrandSuccess(null), 3000);
+    } catch (err) {
+      console.error("Failed to delete brand", err);
+      setBrandError(err instanceof Error ? err.message : "Failed to delete brand.");
+    }
+  };
+
+  const handleToggleBrandStatus = async (brand: ClientBrand) => {
+    try {
+      await updateDoc(doc(db, COLLECTIONS.clientBrands, brand.id), { isActive: !brand.isActive, updatedAt: serverTimestamp() });
+      setClientBrands((prev) => prev.map((b) => (b.id === brand.id ? { ...b, isActive: !brand.isActive } : b)));
+    } catch (err) {
+      console.error("Failed to toggle brand status", err);
+      setBrandError(err instanceof Error ? err.message : "Failed to update brand status.");
+    }
+  };
+
+  const handleUploadBrandLogo = async (file: File): Promise<{ secure_url: string; public_id: string } | null> => {
+    setBrandLogoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const user = auth.currentUser;
+      const idToken = user ? await user.getIdToken() : null;
+      const res = await fetch("/api/admin/upload-brand-image", {
+        method: "POST",
+        headers: idToken ? { Authorization: `Bearer ${idToken}` } : {},
+        body: formData,
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Upload failed");
+      }
+      const data = await res.json();
+      return { secure_url: data.secure_url, public_id: data.public_id };
+    } catch (err) {
+      console.error("[brand-logo] Upload failed:", err);
+      setBrandError(err instanceof Error ? err.message : "Failed to upload logo.");
+      return null;
+    } finally {
+      setBrandLogoUploading(false);
+    }
+  };
+
+  const handleSubmitBrand = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBrandError(null);
+    setBrandSuccess(null);
+
+    if (!brandForm.name.trim()) {
+      setBrandError("Brand name is required.");
+      return;
+    }
+
+    let logoUrl = brandForm.logoUrl;
+    let logoPublicId = brandEditing?.logoPublicId;
+
+    if (brandLogoFile) {
+      const uploadResult = await handleUploadBrandLogo(brandLogoFile);
+      if (!uploadResult) return;
+      logoUrl = uploadResult.secure_url;
+      logoPublicId = uploadResult.public_id;
+    }
+
+    if (!logoUrl && !brandEditing) {
+      setBrandError("Logo is required for new brands.");
+      return;
+    }
+
+    setBrandSubmitting(true);
+    try {
+      if (brandEditing) {
+        await updateDoc(doc(db, COLLECTIONS.clientBrands, brandEditing.id), {
+          name: brandForm.name.trim(),
+          logoUrl: logoUrl || "",
+          logoPublicId,
+          websiteUrl: brandForm.websiteUrl.trim() || null,
+          isActive: brandForm.isActive,
+          displayOrder: brandForm.displayOrder,
+          updatedAt: serverTimestamp(),
+        });
+        setClientBrands((prev) =>
+          prev.map((b) =>
+            b.id === brandEditing.id
+              ? { ...b, name: brandForm.name.trim(), logoUrl: logoUrl || "", logoPublicId, websiteUrl: brandForm.websiteUrl.trim() || undefined, isActive: brandForm.isActive, displayOrder: brandForm.displayOrder }
+              : b
+          )
+        );
+        setBrandSuccess("Brand updated successfully!");
+      } else {
+        const docRef = await addDoc(collection(db, COLLECTIONS.clientBrands), {
+          name: brandForm.name.trim(),
+          logoUrl: logoUrl || "",
+          logoPublicId,
+          websiteUrl: brandForm.websiteUrl.trim() || null,
+          isActive: brandForm.isActive,
+          displayOrder: brandForm.displayOrder,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        setClientBrands((prev) => [...prev, { id: docRef.id, name: brandForm.name.trim(), logoUrl: logoUrl || "", logoPublicId, websiteUrl: brandForm.websiteUrl.trim() || undefined, isActive: brandForm.isActive, displayOrder: brandForm.displayOrder, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }]);
+        setBrandSuccess("Brand added successfully!");
+      }
+      resetBrandForm();
+      setTimeout(() => setBrandSuccess(null), 3000);
+    } catch (err) {
+      console.error("Failed to save brand", err);
+      setBrandError(err instanceof Error ? err.message : "Failed to save brand.");
+    } finally {
+      setBrandSubmitting(false);
+    }
+  };
+
   const handleLogout = async () => {
     await signOut(auth);
     router.replace("/corexit-admin-login");
@@ -1252,6 +1458,7 @@ export default function AdminDashboard() {
               { id: "images", label: "Website Images" },
               { id: "blogs", label: "Blog Management" },
               { id: "company-highlights", label: "Company Highlights" },
+              { id: "client-brands", label: "Client Brands" },
               { id: "settings", label: "Settings" },
             ].map((item) => (
               <button
@@ -1267,7 +1474,7 @@ export default function AdminDashboard() {
             <p className="text-[11px] tracking-[0.08em] uppercase text-slate-400 font-semibold">Firebase</p>
             <p className="text-[12px] text-slate-600 mt-1">Project: corexit-652f5</p>
             <p className="text-[12px] text-slate-600">Auth: Email/Password</p>
-            <p className="text-[11px] text-slate-400 mt-2">Collections: testimonials · contact_messages · settings · websiteImages · blogs · company_highlights</p>
+            <p className="text-[11px] text-slate-400 mt-2">Collections: testimonials · contact_messages · settings · websiteImages · blogs · company_highlights · client_brands</p>
           </div>
         </aside>
 
@@ -1575,6 +1782,182 @@ export default function AdminDashboard() {
                     {highlightSaving && <span className="text-[12px] text-slate-500">Updating Firestore…</span>}
                   </div>
                 </form>
+              )}
+            </div>
+          ) : tab === "client-brands" ? (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h1 className="text-[22px] font-bold tracking-[-0.02em] text-[#071A33]">Client Brands</h1>
+                <span className="text-[12px] text-slate-500">Firestore · client_brands collection</span>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSubmitBrand} className="bg-white border border-slate-200 rounded-[16px] p-6 space-y-5">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[14px] font-semibold text-[#071A33]">{brandEditing ? "Edit Brand" : "Add Brand"}</h3>
+                  {brandEditing && (
+                    <button type="button" onClick={resetBrandForm} className="text-[12px] font-medium text-slate-500 hover:text-[#071A33]">Cancel edit</button>
+                  )}
+                </div>
+
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-medium text-slate-700 mb-1.5">Brand Name *</label>
+                    <input
+                      value={brandForm.name}
+                      onChange={(e) => setBrandForm((p) => ({ ...p, name: e.target.value }))}
+                      className="w-full px-3 py-2.5 text-[13px] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#0057B8]"
+                      placeholder="Acme Corporation"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-700 mb-1.5">Display Order</label>
+                    <input
+                      type="number"
+                      min={0}
+                      step={1}
+                      value={brandForm.displayOrder}
+                      onChange={(e) => setBrandForm((p) => ({ ...p, displayOrder: Number(e.target.value) || 0 }))}
+                      className="w-full px-3 py-2.5 text-[13px] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#0057B8]"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-medium text-slate-700 mb-1.5">Website URL (optional)</label>
+                    <input
+                      type="url"
+                      value={brandForm.websiteUrl}
+                      onChange={(e) => setBrandForm((p) => ({ ...p, websiteUrl: e.target.value }))}
+                      className="w-full px-3 py-2.5 text-[13px] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#0057B8]"
+                      placeholder="https://example.com"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-medium text-slate-700 mb-1.5">Logo *</label>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-3">
+                        <label className="flex items-center justify-center w-28 h-28 bg-slate-100 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer overflow-hidden hover:border-[#0057B8] transition-colors"
+                          onClick={() => document.getElementById("brand-logo-input")?.click()}
+                        >
+                          {brandLogoPreview ? (
+                            <img src={brandLogoPreview} alt="Logo preview" className="w-full h-full object-contain p-2" />
+                          ) : (
+                            <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          )}
+                        </label>
+                        <div className="flex-1">
+                          <input
+                            id="brand-logo-input"
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              if (file.size > 10 * 1024 * 1024) {
+                                setBrandError("File too large. Max 10MB.");
+                                return;
+                              }
+                              setBrandLogoFile(file);
+                              setBrandError(null);
+                              const previewUrl = URL.createObjectURL(file);
+                              setBrandLogoPreview(previewUrl);
+                              setBrandForm((p) => ({ ...p, logoUrl: previewUrl }));
+                            }}
+                            className="sr-only"
+                          />
+                          <div className="space-y-1">
+                            <p className="text-[13px] font-medium text-slate-700">Click or drag to upload logo</p>
+                            <p className="text-[11px] text-slate-500">JPG, PNG, WebP, GIF, AVIF · Max 10MB · Recommended: ~160×60px</p>
+                          </div>
+                        </div>
+                      </div>
+                      {brandLogoUploading && (
+                        <div className="flex items-center gap-2 text-[12px] text-slate-500">
+                          <div className="w-4 h-4 border-2 border-slate-200 border-t-[#0057B8] rounded-full animate-spin" />
+                          Uploading logo to Cloudinary…
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={brandForm.isActive}
+                        onChange={(e) => setBrandForm((p) => ({ ...p, isActive: e.target.checked }))}
+                        className="w-4 h-4 text-[#0057B8] border-slate-300 rounded focus:ring-[#0057B8]"
+                      />
+                      <span className="text-[13px] text-slate-700">Active (visible on Home page marquee)</span>
+                    </label>
+                  </div>
+                </div>
+
+                {brandError && <p className="text-[12px] text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">{brandError}</p>}
+                {brandSuccess && <p className="text-[12px] text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">{brandSuccess}</p>}
+
+                <div className="flex items-center gap-3">
+                  <button type="submit" disabled={brandSubmitting} className="px-6 py-3 rounded-none bg-[#0057B8] text-white text-[13px] font-semibold hover:bg-[#003B7A] disabled:opacity-50">
+                    {brandSubmitting ? "Saving…" : brandEditing ? "Update Brand" : "Add Brand"}
+                  </button>
+                  {brandSubmitting && <span className="text-[12px] text-slate-500">Saving to Firestore…</span>}
+                </div>
+              </form>
+
+              {/* Brand List */}
+              {brandsLoading ? (
+                <div className="bg-white border border-slate-200 rounded-[16px] p-12 flex items-center justify-center">
+                  <div className="w-8 h-8 border-2 border-slate-200 border-t-[#0057B8] rounded-full animate-spin" />
+                </div>
+              ) : (
+                <div className="bg-white border border-slate-200 rounded-[16px] overflow-hidden">
+                  <div className="divide-y divide-slate-100">
+                    {clientBrands.length === 0 ? (
+                      <div className="p-12 text-center">
+                        <p className="text-[14px] text-slate-500">No brands yet. Add your first brand above.</p>
+                      </div>
+                    ) : (
+                      clientBrands.map((brand) => (
+                        <div key={brand.id} className="flex items-center gap-4 p-5 hover:bg-slate-50/50 transition-colors">
+                          <div className="relative w-20 h-14 md:w-24 md:h-16 rounded-lg overflow-hidden bg-slate-50 border border-slate-100 shrink-0 flex items-center justify-center">
+                            {brand.logoUrl ? (
+                              <img
+                                src={brand.logoUrl}
+                                alt={brand.name}
+                                className="max-w-full max-h-full object-contain p-2"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <span className="text-[10px] text-slate-400">No logo</span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[13.5px] font-semibold text-[#071A33] truncate">{brand.name}</p>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              {brand.websiteUrl && (
+                                <a href={brand.websiteUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] text-[#0057B8] hover:underline truncate max-w-[300px]">{brand.websiteUrl}</a>
+                              )}
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase border ${brand.isActive ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                                {brand.isActive ? "Active" : "Inactive"}
+                              </span>
+                              <span className="text-[11px] text-slate-400">Order: {brand.displayOrder}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              onClick={() => handleToggleBrandStatus(brand)}
+                              className={`px-3 py-1.5 rounded-lg text-[11px] font-medium border ${brand.isActive ? "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100" : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"}`}
+                            >
+                              {brand.isActive ? "Deactivate" : "Activate"}
+                            </button>
+                            <button onClick={() => handleEditBrand(brand)} className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-[11px] font-medium text-slate-700 hover:bg-slate-50">Edit</button>
+                            <button onClick={() => handleDeleteBrand(brand.id, brand.logoPublicId)} className="px-3 py-1.5 rounded-lg bg-red-50 border border-red-100 text-[11px] font-medium text-red-600 hover:bg-red-100">Delete</button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
               )}
             </div>
           ) : tab === "messages" ? (

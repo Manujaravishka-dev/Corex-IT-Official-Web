@@ -9,6 +9,7 @@ cloudinary.config({
 });
 
 export const BLOG_IMAGE_FOLDER = "corex-it/blogs";
+export const CLIENT_BRANDS_FOLDER = "corex-it/client-brands";
 
 export const ALLOWED_IMAGE_TYPES = [
   "image/jpeg",
