@@ -1,200 +1,170 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useInView } from "@/hooks/use-in-view";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 import { db } from "@/lib/firebase";
+import { doc, onSnapshot } from "firebase/firestore";
 import {
-  collection,
-  onSnapshot,
-  query,
-  where,
-  orderBy,
-  Timestamp,
-} from "firebase/firestore";
+  COLLECTIONS,
+  COMPANY_HIGHLIGHTS_DOC_ID,
+  DEFAULT_COMPANY_HIGHLIGHTS,
+} from "@/lib/firestore-types";
 
-interface CompanyHighlight {
-  id: string;
+interface StatDefinition {
+  key: string;
+  label: string;
+  valueField: keyof typeof DEFAULT_COMPANY_HIGHLIGHTS;
+  suffixField: keyof typeof DEFAULT_COMPANY_HIGHLIGHTS;
+  fallbackValue: number;
+  fallbackSuffix: string;
+  description: string;
+}
+
+const STAT_DEFINITIONS: StatDefinition[] = [
+  {
+    key: "projects",
+    label: "Projects Completed",
+    valueField: "projectsCompleted",
+    suffixField: "projectsSuffix",
+    fallbackValue: DEFAULT_COMPANY_HIGHLIGHTS.projectsCompleted,
+    fallbackSuffix: DEFAULT_COMPANY_HIGHLIGHTS.projectsSuffix,
+    description: "Successful projects delivered across industries",
+  },
+  {
+    key: "clients",
+    label: "Happy Clients",
+    valueField: "happyClients",
+    suffixField: "clientsSuffix",
+    fallbackValue: DEFAULT_COMPANY_HIGHLIGHTS.happyClients,
+    fallbackSuffix: DEFAULT_COMPANY_HIGHLIGHTS.clientsSuffix,
+    description: "Businesses that trust our engineering",
+  },
+  {
+    key: "team",
+    label: "Team Members",
+    valueField: "teamMembers",
+    suffixField: "teamSuffix",
+    fallbackValue: DEFAULT_COMPANY_HIGHLIGHTS.teamMembers,
+    fallbackSuffix: DEFAULT_COMPANY_HIGHLIGHTS.teamSuffix,
+    description: "Skilled engineers, designers & strategists",
+  },
+  {
+    key: "years",
+    label: "Years of Experience",
+    valueField: "yearsExperience",
+    suffixField: "yearsSuffix",
+    fallbackValue: DEFAULT_COMPANY_HIGHLIGHTS.yearsExperience,
+    fallbackSuffix: DEFAULT_COMPANY_HIGHLIGHTS.yearsSuffix,
+    description: "Building reliable digital software",
+  },
+];
+
+interface ResolvedStat {
+  key: string;
+  label: string;
   value: number;
   suffix: string;
-  label: string;
   description: string;
-  sortOrder: number;
-  isActive: boolean;
-  createdAt: Timestamp | Date | string;
-  updatedAt: Timestamp | Date | string;
+}
+
+function resolveStats(data?: Record<string, unknown>): ResolvedStat[] {
+  const num = (v: unknown, fallback: number) =>
+    typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : fallback;
+  const str = (v: unknown, fallback: string) =>
+    typeof v === "string" && v.trim() !== "" ? v : fallback;
+
+  return STAT_DEFINITIONS.map((def) => ({
+    key: def.key,
+    label: def.label,
+    description: def.description,
+    value: num(data?.[def.valueField], def.fallbackValue),
+    suffix: str(data?.[def.suffixField], def.fallbackSuffix),
+  }));
 }
 
 export function CompanyHighlightsSection() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { isInView } = useInView();
+  const { ref, isInView } = useInView();
   const prefersReducedMotion = usePrefersReducedMotion();
-  const [animated, setAnimated] = useState(false);
-  const [highlightStats, setHighlightStats] = useState<CompanyHighlight[]>([]);
+  const [stats, setStats] = useState<ResolvedStat[]>(() => resolveStats());
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const unsubscribeRef = useRef<(error?: Error) => void>(() => {});
+  const [display, setDisplay] = useState<number[]>(() => stats.map(() => 0));
+  const displayRef = useRef<number[]>(display);
   const rafRef = useRef<number | null>(null);
-  const canceledRef = useRef<boolean>(false);
+  const cancelRef = useRef(false);
 
-  // Fetch active company highlights from Firestore, ordered by sortOrder
+  // Subscribe to the company_highlights/main document in real time.
+  // Falls back to the default sample values when the document is missing or unreadable.
   useEffect(() => {
-    const q = query(collection(db, "company_highlights"), where("isActive", "==", true), orderBy("sortOrder", "asc"));
+    const statsDoc = doc(db, COLLECTIONS.companyHighlights, COMPANY_HIGHLIGHTS_DOC_ID);
     const unsub = onSnapshot(
-      q,
-      (snapshot) => {
-        const stats = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        } as CompanyHighlight)).sort((a, b) => a.sortOrder - b.sortOrder);
-        setHighlightStats(stats);
+      statsDoc,
+      (snap) => {
+        setStats(resolveStats(snap.exists() ? snap.data() : undefined));
         setLoading(false);
-        // Ensure countValues state matches the new data
-        setCountValues(
-          stats.map(() => ({ current: 0, finished: false }))
-        );
-        // Do NOT set animated here: the in-view effects below trigger the
-        // count-up animation once the stats are loaded and the section is visible.
       },
       (err) => {
-        setError(err instanceof Error ? err.message : "Failed to load company highlights");
+        console.error("[company-highlights] Failed to load highlights from Firestore, showing default values:", err);
+        setStats(resolveStats());
         setLoading(false);
       }
     );
-
-    unsubscribeRef.current = () => {};
     return () => {
       unsub();
-      unsubscribeRef.current = () => {};
     };
   }, []);
 
-  // Initialize countValues with matching length to highlightStats
-  const [countValues, setCountValues] = useState(() =>
-    highlightStats.map(() => ({ current: 0, finished: false }))
-  );
-
-  // Start count animation
-  const startCountAnimations = () => {
-    canceledRef.current = false;
-
-    highlightStats.forEach((_stat, i) => {
-      const startTime = Date.now();
-      const duration = 1500;
-      const from = 0;
-      const to = highlightStats[i].value;
-
-      const animate = () => {
-        if (canceledRef.current) return;
-
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-
-        // Ease-out cubic
-        const easedProgress = 1 - Math.pow(1 - progress, 3);
-
-        setCountValues((prev) => {
-          const newPrev = [...prev];
-          newPrev[i].current = Math.round(from + (to - from) * easedProgress);
-          newPrev[i].finished = progress >= 1;
-          return newPrev;
-        });
-
-        if (progress < 1) {
-          rafRef.current = requestAnimationFrame(animate);
-        } else {
-          // Ensure final value is set precisely
-          setCountValues((prev) => {
-            const newPrev = [...prev];
-            newPrev[i].current = to;
-            newPrev[i].finished = true;
-            return newPrev;
-          });
-        }
-      };
-
-      rafRef.current = requestAnimationFrame(animate);
-    });
-
-    setAnimated(true);
-  };
-
-  // Start animation when section enters viewport and not yet animated
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-
-    // Only animate once actual stats exist — never mark animated early on empty data,
-    // otherwise counters stay at 0 when the data arrives later.
-    const isDataReady = highlightStats.length > 0;
-
-    const startIfVisible = () => {
-      const isVisible =
-        element.getBoundingClientRect().top < window.innerHeight && element.getBoundingClientRect().bottom > 0;
-
-      if (isVisible && !animated && !prefersReducedMotion && isDataReady) {
-        setAnimated(true);
-        startCountAnimations();
-      } else if (isVisible && prefersReducedMotion && isDataReady) {
-        // Immediately set final values when reduced motion is preferred
-        const finalValues = highlightStats.map((_, i) => ({
-          current: highlightStats[i].value,
-          finished: true,
-        }));
-        setCountValues(finalValues);
-      }
-    };
-
-    startIfVisible();
-
-    // Observe visibility changes via useInView
-    if (isInView && !animated && isDataReady) {
-      const handleObserve = () => {
-        if (!animated && !prefersReducedMotion) {
-          setAnimated(true);
-          startCountAnimations();
-        } else if (animated && prefersReducedMotion) {
-          const finalValues = highlightStats.map((_, i) => ({
-            current: highlightStats[i].value,
-            finished: true,
-          }));
-          setCountValues(finalValues);
-        }
-      };
-
-      // Initial check
-      handleObserve();
-    }
-  }, [isInView, animated, prefersReducedMotion, highlightStats]);
-
-  // Ensure values are set if section already visible on load
-  useEffect(() => {
-    const element = ref.current;
-    if (!element || animated || prefersReducedMotion || highlightStats.length === 0) return;
-
-    const isVisible = element.getBoundingClientRect().top < window.innerHeight && element.getBoundingClientRect().bottom > 0;
-
-    if (!animated && isVisible) {
-      setAnimated(true);
-      startCountAnimations();
-    }
-  }, [animated, prefersReducedMotion, isInView, highlightStats]);
-
-  // Cleanup animation frames on unmount
+  // Clean up any running animation on unmount
   useEffect(() => {
     return () => {
-      canceledRef.current = true;
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
+      cancelRef.current = true;
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, []);
 
-  // On load failure: keep the section (header/text) and hide the stats grid.
-  // The real error is logged here — never shown raw to visitors.
-  if (error) {
-    console.error("[company-highlights] Failed to load active highlights, hiding stats grid:", error);
-  }
+  // Count-up animation when the section becomes visible, or whenever the values update.
+  useEffect(() => {
+    if (loading) return;
+    const targets = stats.map((s) => s.value);
+
+    const commit = (values: number[]) => {
+      displayRef.current = values;
+      setDisplay(values);
+    };
+
+    // Reduced-motion users get final values immediately, no animation.
+    if (prefersReducedMotion || stats.length === 0) {
+      commit(targets);
+      return;
+    }
+
+    // Don't animate while out of view; the display simply stays at zero until the
+    // section scrolls into view, then the count-up runs once from the current values.
+    if (!isInView) return;
+
+    cancelRef.current = false;
+    const from = [...displayRef.current];
+    const startTime = Date.now();
+    const duration = 1200;
+
+    const step = () => {
+      if (cancelRef.current) return;
+      const t = Math.min((Date.now() - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      commit(targets.map((target, i) => Math.round(from[i] + (target - from[i]) * eased)));
+      if (t < 1) {
+        rafRef.current = requestAnimationFrame(step);
+      } else {
+        commit([...targets]);
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(step);
+    return () => {
+      cancelRef.current = true;
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [stats, isInView, prefersReducedMotion, loading]);
 
   return (
     <section
@@ -247,23 +217,23 @@ export function CompanyHighlightsSection() {
                     key={i}
                     className="flex flex-col items-center gap-2 py-4 border-y border-white/10"
                   >
-                    <span className="text-[3rem] font-bold text-white tracking-[-0.02em] skeleton" />
-                    <p className="text-[12px] font-medium text-slate-400 uppercase tracking-[0.1em] skeleton" />
-                    <p className="text-[11px] text-slate-500 text-center skeleton" />
+                    <span className="inline-block h-10 w-24 rounded-lg bg-white/10 animate-pulse" />
+                    <span className="inline-block h-3 w-28 rounded bg-white/10 animate-pulse" />
+                    <span className="inline-block h-3 w-20 rounded bg-white/10 animate-pulse" />
                   </div>
                 ))}
               </div>
-            ) : highlightStats.length === 0 ? null : (
+            ) : (
               <div className="grid grid-cols-2 gap-4">
-                {highlightStats.map((stat, i) => (
+                {stats.map((stat, i) => (
                   <div
-                    key={stat.label}
+                    key={stat.key}
                     className="flex flex-col items-center gap-2 py-4 border-y border-white/10"
                   >
                     <span
                       className="text-[3rem] font-bold text-white tracking-[-0.02em]"
                     >
-                      {countValues[i].current}{stat.suffix}
+                      {display[i]}{stat.suffix}
                     </span>
 
                     <p className="text-[12px] font-medium text-slate-400 uppercase tracking-[0.1em]">

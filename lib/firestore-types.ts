@@ -141,17 +141,35 @@ export const BLOG_CATEGORIES = [
   "Business",
 ] as const;
 
-// company_highlights collection
-export type CompanyHighlight = {
-  id: string;
-  value: number;
-  suffix: string;
-  label: string;
-  description: string;
-  sortOrder: number;
-  isActive: boolean;
-  createdAt: Timestamp | Date | string;
-  updatedAt: Timestamp | Date | string;
+// company_highlights collection — single document `company_highlights/main` holds the four
+// statistics rendered on the Home page "Company Highlights" section. Admin edits these values
+// via the Admin Panel (Company Highlights tab). Public Home reads the same document.
+export type CompanyHighlights = {
+  projectsCompleted: number;
+  projectsSuffix: string;
+  happyClients: number;
+  clientsSuffix: string;
+  teamMembers: number;
+  teamSuffix: string;
+  yearsExperience: number;
+  yearsSuffix: string;
+  updatedAt: Timestamp | Date | string | null;
+};
+
+export const COMPANY_HIGHLIGHTS_DOC_ID = "main";
+export const COMPANY_HIGHLIGHTS_DOC_PATH = `${COLLECTIONS.companyHighlights}/${COMPANY_HIGHLIGHTS_DOC_ID}`;
+
+// Initial/fallback values — used to seed the Firestore document on first load and as the
+// public fallback while data is loading or if the document is missing.
+export const DEFAULT_COMPANY_HIGHLIGHTS: Omit<CompanyHighlights, "updatedAt"> = {
+  projectsCompleted: 50,
+  projectsSuffix: "+",
+  happyClients: 35,
+  clientsSuffix: "+",
+  teamMembers: 12,
+  teamSuffix: "+",
+  yearsExperience: 5,
+  yearsSuffix: "+",
 };
 
 

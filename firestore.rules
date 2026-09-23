@@ -42,14 +42,13 @@ service cloud.firestore {
       allow create, update, delete: if request.auth != null;
     }
 
-    // Company Highlights: managed by admin via admin panel
-    // Public may read only active highlights via the filtered query:
-    //   query(collection(db,"company_highlights"), where("isActive","==",true), orderBy("sortOrder","asc"))
-    // list rule validates per-document isActive so inactive docs can never be exposed.
-    // Only authenticated admin may create, update, delete (admin panel uses server API, not direct client writes).
+    // Company Highlights: admin-managed public statistics shown on the Home page.
+    // Data lives in a single document `company_highlights/main` (fields: projectsCompleted,
+    // projectsSuffix, happyClients, clientsSuffix, teamMembers, teamSuffix, yearsExperience,
+    // yearsSuffix, updatedAt). Any visitor may read so the public Home page (client-side
+    // onSnapshot/getDoc) can render the stats; only authenticated admin may write.
     match /company_highlights/{docId} {
-      allow get: if request.auth != null || resource.data.isActive == true;
-      allow list: if request.auth != null || resource.data.isActive == true;
+      allow get, list: if true;
       allow create, update, delete: if request.auth != null;
     }
 

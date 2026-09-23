@@ -22,7 +22,9 @@ import { auth, db, storage } from "@/lib/firebase";
 import {
   COLLECTIONS,
   SETTINGS_DOC_ID,
-  type CompanyHighlight,
+  COMPANY_HIGHLIGHTS_DOC_ID,
+  DEFAULT_COMPANY_HIGHLIGHTS,
+  type CompanyHighlights,
   type Testimonial,
   type TestimonialInvite,
   type ContactMessage,
@@ -37,14 +39,16 @@ import { defaultCompanySettings } from "@/lib/site-settings";
 // Types for admin UI
 type Tab = "dashboard" | "testimonials" | "messages" | "images" | "blogs" | "company-highlights";
 
-// Company Highlight form state
-type CompanyHighlightForm = {
-  value: number;
-  suffix: string;
-  label: string;
-  description: string;
-  sortOrder: number;
-  isActive: boolean;
+// Company Highlights form state — mirrors the company_highlights/main document
+type CompanyHighlightsForm = {
+  projectsCompleted: number;
+  projectsSuffix: string;
+  happyClients: number;
+  clientsSuffix: string;
+  teamMembers: number;
+  teamSuffix: string;
+  yearsExperience: number;
+  yearsSuffix: string;
 };
 
 const BLOG_COVER_ACCEPT = "image/jpeg,image/png,image/webp,image/gif,image/avif";
@@ -61,6 +65,55 @@ function formatDate(value: Timestamp | Date | string | undefined): string {
   } catch {
     return String(value);
   }
+}
+
+function coerceNum(value: unknown, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : fallback;
+}
+
+function coerceStr(value: unknown, fallback: string): string {
+  return typeof value === "string" && value.trim() !== "" ? value : fallback;
+}
+
+// Single row in the Company Highlights admin form: value + suffix inputs.
+function HighlightField({
+  label,
+  value,
+  suffix,
+  onValue,
+  onSuffix,
+}: {
+  label: string;
+  value: number;
+  suffix: string;
+  onValue: (v: number) => void;
+  onSuffix: (s: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-3 items-end">
+      <div>
+        <label className="block text-[11px] font-medium text-slate-700 mb-1.5">{label}</label>
+        <input
+          type="number"
+          min={0}
+          step={1}
+          value={Number.isFinite(value) ? value : ""}
+          onChange={(e) => onValue(e.target.value === "" ? 0 : Number(e.target.value))}
+          className="w-full px-3 py-2.5 text-[13px] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#0057B8]"
+        />
+      </div>
+      <div>
+        <label className="block text-[11px] font-medium text-slate-700 mb-1.5">Suffix</label>
+        <input
+          value={suffix}
+          onChange={(e) => onSuffix(e.target.value)}
+          placeholder="+"
+          maxLength={5}
+          className="w-full px-3 py-2.5 text-[13px] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#0057B8]"
+        />
+      </div>
+    </div>
+  );
 }
 
 export default function AdminDashboard() {
@@ -137,18 +190,10 @@ export default function AdminDashboard() {
   });
   const [blogSubmitting, setBlogSubmitting] = useState(false);
 
-  // Company Highlights state
-  const [highlights, setHighlights] = useState<CompanyHighlight[]>([]);
-  const [highlightForm, setHighlightForm] = useState<CompanyHighlightForm>({
-    value: 0,
-    suffix: "+",
-    label: "",
-    description: "",
-    sortOrder: 1,
-    isActive: true,
-  });
-  const [highlightEditing, setHighlightEditing] = useState<CompanyHighlight | null>(null);
-  const [highlightSubmitting, setHighlightSubmitting] = useState(false);
+  // Company Highlights state — single document (company_highlights/main)
+  const [highlightForm, setHighlightForm] = useState<CompanyHighlightsForm>({ ...DEFAULT_COMPANY_HIGHLIGHTS });
+  const [highlightLoading, setHighlightLoading] = useState(true);
+  const [highlightSaving, setHighlightSaving] = useState(false);
   const [highlightError, setHighlightError] = useState<string | null>(null);
   const [highlightSuccess, setHighlightSuccess] = useState<string | null>(null);
   const [bError, setBError] = useState<string | null>(null);
@@ -171,42 +216,43 @@ export default function AdminDashboard() {
     return () => unsub();
   }, [router]);
 
-  // Company Highlights — single secure fetch path via API (Admin SDK), mirroring the invites flow.
-  // Uses the signed-in Firebase user ID token; never localStorage.
-  const fetchHighlightsFromApi = async () => {
+  // Company Highlights — load (and seed if missing) the single company_highlights/main document.
+  // Uses the client Firestore SDK (same document the public Home page reads), mirroring Settings.
+  const fetchCompanyHighlights = async () => {
+    setHighlightLoading(true);
+    setHighlightError(null);
     try {
-      const user = auth.currentUser;
-      if (!user) return;
-      let idToken: string | null = null;
-      try {
-        idToken = await user.getIdToken();
-      } catch (tokenErr) {
-        console.error("Failed to load company highlights (admin) — getIdToken failed", tokenErr);
+      const ref = doc(db, COLLECTIONS.companyHighlights, COMPANY_HIGHLIGHTS_DOC_ID);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const d = snap.data() as Partial<CompanyHighlights>;
+        setHighlightForm({
+          projectsCompleted: coerceNum(d.projectsCompleted, DEFAULT_COMPANY_HIGHLIGHTS.projectsCompleted),
+          projectsSuffix: coerceStr(d.projectsSuffix, DEFAULT_COMPANY_HIGHLIGHTS.projectsSuffix),
+          happyClients: coerceNum(d.happyClients, DEFAULT_COMPANY_HIGHLIGHTS.happyClients),
+          clientsSuffix: coerceStr(d.clientsSuffix, DEFAULT_COMPANY_HIGHLIGHTS.clientsSuffix),
+          teamMembers: coerceNum(d.teamMembers, DEFAULT_COMPANY_HIGHLIGHTS.teamMembers),
+          teamSuffix: coerceStr(d.teamSuffix, DEFAULT_COMPANY_HIGHLIGHTS.teamSuffix),
+          yearsExperience: coerceNum(d.yearsExperience, DEFAULT_COMPANY_HIGHLIGHTS.yearsExperience),
+          yearsSuffix: coerceStr(d.yearsSuffix, DEFAULT_COMPANY_HIGHLIGHTS.yearsSuffix),
+        });
+        setHighlightSuccess(null);
+      } else {
+        // Document does not exist yet — initialize it with the sample values so it is editable.
+        await setDoc(
+          ref,
+          { ...DEFAULT_COMPANY_HIGHLIGHTS, updatedAt: serverTimestamp() },
+          { merge: true }
+        );
+        setHighlightForm({ ...DEFAULT_COMPANY_HIGHLIGHTS });
+        setHighlightSuccess("Company highlights initialized with default values.");
+        setTimeout(() => setHighlightSuccess(null), 4000);
       }
-      if (!idToken) {
-        console.error("Failed to load company highlights (admin) — no ID token");
-        return;
-      }
-      const res = await fetch("/api/company-highlights", {
-        headers: { Authorization: `Bearer ${idToken}` },
-        cache: "no-store",
-      });
-      if (!res.ok) {
-        const errText = await res.text().catch(() => "");
-        console.error("Failed to load company highlights (admin)", res.status, errText);
-        if (res.status === 401) {
-          setHighlightError("Admin authentication token is invalid. Please sign in again.");
-        } else if (res.status === 503) {
-          setHighlightError(errText || "Firebase Admin not configured on server");
-        } else {
-          setHighlightError("Failed to load company highlights.");
-        }
-        return;
-      }
-      const data = await res.json();
-      setHighlights((data.highlights as CompanyHighlight[]) || []);
     } catch (err) {
-      console.error("Failed to load company highlights (admin) — unexpected", err);
+      console.error("Failed to load company highlights (admin)", err);
+      setHighlightError(err instanceof Error ? err.message : "Failed to load company highlights.");
+    } finally {
+      setHighlightLoading(false);
     }
   };
 
@@ -263,9 +309,6 @@ export default function AdminDashboard() {
     } catch (err) {
       console.error("Failed to load blogs (admin)", err);
     }
-
-        // 6) Company Highlights via secure server API (Admin SDK) — single fetch path
-    await fetchHighlightsFromApi();
 
 // 5) Invites via secure server API (Admin SDK) — additive only, must NOT block existing panel
     // Uses existing Firebase Auth instance; waits for onAuthStateChanged (authUser) — never localStorage/URL
@@ -351,6 +394,14 @@ export default function AdminDashboard() {
     // Do NOT call with auth.currentUser that may be temporarily null after page load.
     if (!authLoading && authUser) fetchAll();
   }, [authLoading, authUser]);
+
+  // Company Highlights — load the current values whenever the tab is opened.
+  const handleTabClick = (id: Tab) => {
+    setTab(id);
+    if (id === "company-highlights") {
+      void fetchCompanyHighlights();
+    }
+  };
 
   // Dashboard stats
   const stats = useMemo(() => {
@@ -1118,252 +1169,49 @@ export default function AdminDashboard() {
     }
   };
 
-  // Company Highlights CRUD
-  const resetHighlightForm = () => {
-    setHighlightForm({
-      value: 0,
-      suffix: "+",
-      label: "",
-      description: "",
-      sortOrder: 1,
-      isActive: true,
-    });
-    setHighlightError(null);
-  };
-
-  const handleAddHighlight = async () => {
-    try {
-      if (!highlightForm.label.trim() || !highlightForm.description.trim()) {
-        setHighlightError("Label and description are required.");
-        return;
-      }
-      if (highlightForm.value < 0) {
-        setHighlightError("Value must be non-negative.");
-        return;
-      }
-      const user = auth.currentUser;
-      if (!user) {
-        setHighlightError("Admin authentication required.");
-        return;
-      }
-      let idToken: string | null = null;
-      try {
-        idToken = await user.getIdToken();
-      } catch {
-        setHighlightError("Admin authentication token is invalid. Please sign in again.");
-        return;
-      }
-      if (!idToken) {
-        setHighlightError("Admin authentication token is invalid. Please sign in again.");
-        return;
-      }
-      setHighlightSubmitting(true);
-      setHighlightError(null);
-      const payload = {
-        value: Number(highlightForm.value),
-        suffix: highlightForm.suffix || "",
-        label: highlightForm.label.trim(),
-        description: highlightForm.description.trim(),
-        sortOrder: Number(highlightForm.sortOrder),
-        isActive: highlightForm.isActive,
-      };
-      const res = await fetch("/api/company-highlights", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        if (res.status === 401) {
-          setHighlightError("Admin authentication token is invalid. Please sign in again.");
-          return;
-        }
-        throw new Error((data.error as string) || `Failed to add highlight (${res.status})`);
-      }
-      setHighlightSuccess("Highlight added successfully!");
-      setTimeout(() => setHighlightSuccess(null), 4000);
-      resetHighlightForm();
-      await fetchHighlightsFromApi();
-    } catch (err: unknown) {
-      console.error("Failed to add highlight", err);
-      setHighlightError(err instanceof Error ? err.message : "Failed to add highlight.");
-    } finally {
-      setHighlightSubmitting(false);
-    }
-  };
-
-  const handleEditHighlight = (h: CompanyHighlight) => {
-    setHighlightEditing(h);
-    setHighlightForm({
-      value: h.value,
-      suffix: h.suffix,
-      label: h.label,
-      description: h.description,
-      sortOrder: h.sortOrder,
-      isActive: h.isActive,
-    });
+  // Company Highlights — save edits to the single company_highlights/main document.
+  const handleSaveHighlights = async (e: React.FormEvent) => {
+    e.preventDefault();
     setHighlightError(null);
     setHighlightSuccess(null);
-    setTab("company-highlights");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
 
-  const handleUpdateHighlight = async (id: string) => {
+    // Prevent invalid/negative numeric values
+    const numericValues = [
+      highlightForm.projectsCompleted,
+      highlightForm.happyClients,
+      highlightForm.teamMembers,
+      highlightForm.yearsExperience,
+    ];
+    if (numericValues.some((v) => typeof v !== "number" || !Number.isFinite(v) || v < 0)) {
+      setHighlightError("All values must be non-negative numbers.");
+      return;
+    }
+
+    setHighlightSaving(true);
     try {
-      if (!highlightForm.label.trim() || !highlightForm.description.trim()) {
-        setHighlightError("Label and description are required.");
-        return;
-      }
-      if (highlightForm.value < 0) {
-        setHighlightError("Value must be non-negative.");
-        return;
-      }
-      const user = auth.currentUser;
-      if (!user) {
-        setHighlightError("Admin authentication required.");
-        return;
-      }
-      let idToken: string | null = null;
-      try {
-        idToken = await user.getIdToken();
-      } catch {
-        setHighlightError("Admin authentication token is invalid. Please sign in again.");
-        return;
-      }
-      if (!idToken) {
-        setHighlightError("Admin authentication token is invalid. Please sign in again.");
-        return;
-      }
-      setHighlightSubmitting(true);
-      setHighlightError(null);
-      const payload = {
-        value: Number(highlightForm.value),
-        suffix: highlightForm.suffix || "",
-        label: highlightForm.label.trim(),
-        description: highlightForm.description.trim(),
-        sortOrder: Number(highlightForm.sortOrder),
-        isActive: highlightForm.isActive,
-      };
-      const res = await fetch("/api/company-highlights/" + id, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`,
+      const ref = doc(db, COLLECTIONS.companyHighlights, COMPANY_HIGHLIGHTS_DOC_ID);
+      await setDoc(
+        ref,
+        {
+          projectsCompleted: Number(highlightForm.projectsCompleted),
+          projectsSuffix: highlightForm.projectsSuffix.trim(),
+          happyClients: Number(highlightForm.happyClients),
+          clientsSuffix: highlightForm.clientsSuffix.trim(),
+          teamMembers: Number(highlightForm.teamMembers),
+          teamSuffix: highlightForm.teamSuffix.trim(),
+          yearsExperience: Number(highlightForm.yearsExperience),
+          yearsSuffix: highlightForm.yearsSuffix.trim(),
+          updatedAt: serverTimestamp(),
         },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        if (res.status === 401) {
-          setHighlightError("Admin authentication token is invalid. Please sign in again.");
-          return;
-        }
-        throw new Error((data.error as string) || `Failed to update highlight (${res.status})`);
-      }
-      setHighlightSuccess("Highlight updated successfully!");
+        { merge: true }
+      );
+      setHighlightSuccess("Company highlights saved successfully!");
       setTimeout(() => setHighlightSuccess(null), 4000);
-      resetHighlightForm();
-      await fetchHighlightsFromApi();
     } catch (err: unknown) {
-      console.error("Failed to update highlight", err);
-      setHighlightError(err instanceof Error ? err.message : "Failed to update highlight.");
+      console.error("Failed to save company highlights (admin)", err);
+      setHighlightError(err instanceof Error ? err.message : "Failed to save company highlights.");
     } finally {
-      setHighlightSubmitting(false);
-    }
-  }
-
-  const handleDeleteHighlight = async (id: string) => {
-    if (!confirm("Delete this highlight? This cannot be undone.")) return;
-    try {
-      const user = auth.currentUser;
-      if (!user) {
-        alert("Admin authentication required.");
-        return;
-      }
-      let idToken: string | null = null;
-      try {
-        idToken = await user.getIdToken();
-      } catch {
-        alert("Admin authentication token is invalid. Please sign in again.");
-        return;
-      }
-      if (!idToken) {
-        alert("Admin authentication token is invalid. Please sign in again.");
-        return;
-      }
-      const res = await fetch("/api/company-highlights/" + id, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${idToken}` },
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        if (res.status === 401) {
-          alert("Admin authentication token is invalid. Please sign in again.");
-          return;
-        }
-        throw new Error((data.error as string) || `Failed to delete highlight (${res.status})`);
-      }
-      setHighlights((prev) => prev.filter((h) => h.id !== id));
-      setHighlightSuccess("Highlight deleted successfully!");
-      setTimeout(() => setHighlightSuccess(null), 4000);
-      resetHighlightForm();
-    } catch (err: unknown) {
-      console.error("Failed to delete highlight", err);
-      setHighlightError(err instanceof Error ? err.message : "Failed to delete highlight.");
-    }
-  };
-
-  const handleToggleHighlightActive = async (h: CompanyHighlight) => {
-    try {
-      const newActive = !h.isActive;
-      const user = auth.currentUser;
-      if (!user) {
-        alert("Admin authentication required.");
-        return;
-      }
-      let idToken: string | null = null;
-      try {
-        idToken = await user.getIdToken();
-      } catch {
-        alert("Admin authentication token is invalid. Please sign in again.");
-        return;
-      }
-      if (!idToken) {
-        alert("Admin authentication token is invalid. Please sign in again.");
-        return;
-      }
-      const res = await fetch("/api/company-highlights/" + h.id, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({
-          value: h.value,
-          suffix: h.suffix || "",
-          label: h.label,
-          description: h.description,
-          sortOrder: h.sortOrder,
-          isActive: newActive,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        if (res.status === 401) {
-          alert("Admin authentication token is invalid. Please sign in again.");
-          return;
-        }
-        throw new Error((data.error as string) || `Failed to update highlight (${res.status})`);
-      }
-      setHighlightSuccess(newActive ? "Highlight activated!" : "Highlight deactivated!");
-      setTimeout(() => setHighlightSuccess(null), 4000);
-      await fetchHighlightsFromApi();
-    } catch (err) {
-      console.error("Failed to toggle highlight status", err);
-      alert(err instanceof Error ? err.message : "Failed to toggle highlight status.");
+      setHighlightSaving(false);
     }
   };
 
@@ -1408,7 +1256,7 @@ export default function AdminDashboard() {
             ].map((item) => (
               <button
                 key={item.id}
-                onClick={() => setTab(item.id as Tab)}
+                onClick={() => handleTabClick(item.id as Tab)}
                 className={`px-4 py-2.5 rounded-lg text-[13.5px] font-medium text-left whitespace-nowrap transition-colors ${tab === item.id ? "bg-[#071A33] text-white" : "text-slate-600 hover:bg-slate-50"}`}
               >
                 {item.label}
@@ -1419,7 +1267,7 @@ export default function AdminDashboard() {
             <p className="text-[11px] tracking-[0.08em] uppercase text-slate-400 font-semibold">Firebase</p>
             <p className="text-[12px] text-slate-600 mt-1">Project: corexit-652f5</p>
             <p className="text-[12px] text-slate-600">Auth: Email/Password</p>
-            <p className="text-[11px] text-slate-400 mt-2">Collections: testimonials · contact_messages · settings · websiteImages · blogs</p>
+            <p className="text-[11px] text-slate-400 mt-2">Collections: testimonials · contact_messages · settings · websiteImages · blogs · company_highlights</p>
           </div>
         </aside>
 
@@ -1670,91 +1518,64 @@ export default function AdminDashboard() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h1 className="text-[22px] font-bold tracking-[-0.02em] text-[#071A33]">Company Highlights</h1>
-                <span className="text-[12px] text-slate-500">{highlights.length} highlight{highlights.length !== 1 && "s"}</span>
+                <span className="text-[12px] text-slate-500">Firestore · company_highlights/main</span>
               </div>
 
-              {/* form section */}
-              <div className="bg-white border border-slate-200 rounded-[16px] p-6 space-y-4">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-medium text-slate-700 mb-1.5">Value *</label>
-                    <input value={highlightForm.value} onChange={(e) => setHighlightForm((p) => ({ ...p, value: Number(e.target.value) }))} className="w-full px-3 py-2.5 text-[13px] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#0057B8]" placeholder="0" type="number" />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-medium text-slate-700 mb-1.5">Suffix *</label>
-                    <select value={highlightForm.suffix} onChange={(e) => setHighlightForm((p) => ({ ...p, suffix: e.target.value }))} className="w-full px-3 py-2.5 text-[13px] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#0057B8]">
-                      <option value="">None</option>
-                      <option value="+">+</option>
-                      <option value="%">%</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-medium text-slate-700 mb-1.5">Label *</label>
-                    <input value={highlightForm.label} onChange={(e) => setHighlightForm((p) => ({ ...p, label: e.target.value }))} className="w-full px-3 py-2.5 text-[13px] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#0057B8]" placeholder="Projects Delivered" />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-medium text-slate-700 mb-1.5">Description *</label>
-                    <textarea value={highlightForm.description} onChange={(e) => setHighlightForm((p) => ({ ...p, description: e.target.value }))} rows={3} className="w-full px-3 py-2.5 text-[13px] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#0057B8] resize-none" placeholder="Successful projects delivered across diverse industries" maxLength={300} />
-                  </div>
+              {highlightLoading ? (
+                <div className="bg-white border border-slate-200 rounded-[16px] p-12 flex items-center justify-center">
+                  <div className="w-8 h-8 border-2 border-slate-200 border-t-[#0057B8] rounded-full animate-spin" />
                 </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-medium text-slate-700 mb-1.5">Display Order *</label>
-                    <input value={highlightForm.sortOrder} onChange={(e) => setHighlightForm((p) => ({ ...p, sortOrder: Number(e.target.value) }))} className="w-full px-3 py-2.5 text-[13px] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#0057B8]" type="number" />
+              ) : (
+                <form onSubmit={handleSaveHighlights} className="bg-white border border-slate-200 rounded-[16px] p-6 space-y-5">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                      <h3 className="text-[14px] font-semibold text-[#071A33]">Company Statistics</h3>
+                      <p className="text-[11px] text-slate-400 mt-0.5">Shown on the Home page &ldquo;Company Highlights&rdquo; section (right-hand statistics). Saved to the same document the public site reads.</p>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-[11px] font-medium text-slate-700 mb-1.5">Active Status</label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={highlightForm.isActive} onChange={(e) => setHighlightForm((p) => ({ ...p, isActive: e.target.checked }))} className="w-4 h-4 rounded border-slate-300 text-[#0057B8] focus:ring-[#0057B8]" />
-                      <span className="text-[13px] text-slate-700">Active (visible on website)</span>
-                    </label>
-                  </div>
-                </div>
-                <div>
-                  {highlightEditing ? (
-                    <button type="button" onClick={() => setHighlightEditing(null)} className="text-[12px] font-medium text-slate-500 hover:text-[#071A33]">Cancel edit</button>
-                  ) : null}
-                  <button type="submit" disabled={highlightSubmitting} className="px-6 py-3 rounded-none bg-[#0057B8] text-white text-[13px] font-semibold hover:bg-[#003B7A] disabled:opacity-50">
-                    {highlightSubmitting ? "Processing…" : highlightEditing ? "Update Highlight" : "Add Highlight"}
-                  </button>
-                </div>
-                {highlightError && <p className="text-[12px] text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">{highlightError}</p>}
-                {highlightSuccess && <p className="text-[12px] text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">{highlightSuccess}</p>}
-              </div>
 
-              {/* highlights list */}
-              <div className="mt-8">
-                <h3 className="text-[14px] font-semibold text-[#071A33]">Existing Highlights</h3>
-                {highlights.length === 0 ? (
-                  <p className="text-[13px] text-slate-500 mt-4">No highlights yet. Add your first one above.</p>
-                ) : (
-                  <div className="grid grid-cols-2 gap-4">
-                    {highlights.map((h) => (
-                      <div key={h.id} className="bg-white border border-slate-200 rounded-[16px] p-4">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="text-[13px] font-semibold text-[#071A33]">{h.label}</p>
-                            <p className="text-[12px] text-slate-500">{h.suffix}{h.value}</p>
-                            <p className="text-[11px] text-slate-400">Sort: {h.sortOrder}</p>
-                          </div>
-                          <div className="flex gap-2">
-                            <button onClick={() => handleEditHighlight(h)} className="px-2 py-1 rounded-lg bg-white border border-slate-200 text-[11px] font-medium text-slate-700 hover:bg-slate-50">Edit</button>
-                            <button onClick={() => handleDeleteHighlight(h.id)} className="px-2 py-1 rounded-lg bg-red-50 border border-red-100 text-[11px] font-medium text-red-600 hover:bg-red-100">Delete</button>
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2 mt-2">
-                          {h.isActive ? (
-                            <span className="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-[10px] font-semibold tracking-[0.06em] uppercase">Active</span>
-                          ) : (
-                            <span className="px-2 py-1 rounded-lg bg-slate-100 text-slate-500 text-[10px] font-semibold tracking-[0.06em] uppercase">Inactive</span>
-                          )}
-                          <button onClick={() => handleToggleHighlightActive(h)} className="px-2 py-1 rounded-lg bg-white border border-slate-200 text-[11px] font-medium text-slate-700 hover:bg-slate-50">{h.isActive ? "Deactivate" : "Activate"}</button>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <HighlightField
+                      label="Projects Completed"
+                      value={highlightForm.projectsCompleted}
+                      suffix={highlightForm.projectsSuffix}
+                      onValue={(v) => setHighlightForm((p) => ({ ...p, projectsCompleted: v }))}
+                      onSuffix={(s) => setHighlightForm((p) => ({ ...p, projectsSuffix: s }))}
+                    />
+                    <HighlightField
+                      label="Happy Clients"
+                      value={highlightForm.happyClients}
+                      suffix={highlightForm.clientsSuffix}
+                      onValue={(v) => setHighlightForm((p) => ({ ...p, happyClients: v }))}
+                      onSuffix={(s) => setHighlightForm((p) => ({ ...p, clientsSuffix: s }))}
+                    />
+                    <HighlightField
+                      label="Team Members / Employees"
+                      value={highlightForm.teamMembers}
+                      suffix={highlightForm.teamSuffix}
+                      onValue={(v) => setHighlightForm((p) => ({ ...p, teamMembers: v }))}
+                      onSuffix={(s) => setHighlightForm((p) => ({ ...p, teamSuffix: s }))}
+                    />
+                    <HighlightField
+                      label="Years of Experience"
+                      value={highlightForm.yearsExperience}
+                      suffix={highlightForm.yearsSuffix}
+                      onValue={(v) => setHighlightForm((p) => ({ ...p, yearsExperience: v }))}
+                      onSuffix={(s) => setHighlightForm((p) => ({ ...p, yearsSuffix: s }))}
+                    />
                   </div>
-                )}
-              </div>
+
+                  {highlightError && <p className="text-[12px] text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">{highlightError}</p>}
+                  {highlightSuccess && <p className="text-[12px] text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">{highlightSuccess}</p>}
+
+                  <div className="flex items-center gap-3">
+                    <button type="submit" disabled={highlightSaving} className="px-6 py-3 rounded-none bg-[#0057B8] text-white text-[13px] font-semibold hover:bg-[#003B7A] disabled:opacity-50">
+                      {highlightSaving ? "Saving…" : "Save Company Highlights"}
+                    </button>
+                    {highlightSaving && <span className="text-[12px] text-slate-500">Updating Firestore…</span>}
+                  </div>
+                </form>
+              )}
             </div>
           ) : tab === "messages" ? (
             <div className="space-y-6">
