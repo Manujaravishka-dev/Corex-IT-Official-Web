@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useInView } from "@/hooks/use-in-view";
+import { useState, useMemo } from "react";
+import { useWebsiteImages } from "@/hooks/use-website-images";
 
 type Project = {
   id: string;
@@ -13,14 +15,14 @@ type Project = {
   year: string;
 };
 
-const projects: Project[] = [
+const defaultProjects: Project[] = [
   {
     id: "nexus",
     title: "Nexus Analytics",
     category: "Web Application — Finance",
     desc: "Real-time analytics platform for enterprise data — interactive dashboards, drill-downs and sub-40ms queries for finance teams.",
     tech: ["React", "Next.js", "Node.js", "PostgreSQL"],
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
+    image: "",
     year: "2024",
   },
   {
@@ -29,7 +31,7 @@ const projects: Project[] = [
     category: "E-Commerce Platform — Retail",
     desc: "Full-featured marketplace with vendor management, payments, inventory and real-time order tracking at scale.",
     tech: ["React", "Next.js", "MongoDB", "Stripe"],
-    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1200&q=80",
+    image: "",
     year: "2024",
   },
   {
@@ -38,7 +40,7 @@ const projects: Project[] = [
     category: "Mobile Application — Productivity",
     desc: "Cross-platform productivity app with sync, drag-and-drop workflows and intelligent notifications.",
     tech: ["React Native", "Firebase", "TypeScript"],
-    image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7dfb?auto=format&fit=crop&w=1200&q=80",
+    image: "",
     year: "2023",
   },
   {
@@ -47,13 +49,26 @@ const projects: Project[] = [
     category: "Healthcare Platform — Enterprise",
     desc: "Patient management with scheduling, medical records, telehealth and HIPAA-compliant data handling.",
     tech: [".NET", "Next.js", "SQL Server", "Azure"],
-    image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80",
+    image: "",
     year: "2023",
   },
 ];
 
 export function ProjectsSection() {
   const { ref } = useInView();
+  const { images: projectImages } = useWebsiteImages("projects");
+
+  const projects = useMemo(() => {
+    if (projectImages.length === 0) return defaultProjects;
+    const imgMap = new Map<string, string>();
+    projectImages.forEach((img) => {
+      if (img.title && img.imageUrl) imgMap.set(img.title.toLowerCase(), img.imageUrl);
+    });
+    return defaultProjects.map((p) => ({
+      ...p,
+      image: imgMap.get(p.title.toLowerCase()) || "",
+    }));
+  }, [projectImages]);
 
   return (
     <section id="projects" className="relative bg-[#F8F8F8] overflow-hidden border-y border-slate-100">
@@ -71,9 +86,14 @@ export function ProjectsSection() {
         </div>
 
         <div className="space-y-6">
+          {/* TEMPORARILY COMMENTED OUT — project cards hidden.
+              Re-enable by uncommenting the block below. Project data in
+              `defaultProjects` above is preserved and NOT deleted. */}
+          {/*
           {projects.map((p, i) => (
             <ProjectRow key={p.id} project={p} index={i} reverse={i % 2 === 1} />
           ))}
+          */}
         </div>
       </div>
     </section>
@@ -82,6 +102,7 @@ export function ProjectsSection() {
 
 function ProjectRow({ project, index, reverse }: { project: Project; index: number; reverse: boolean }) {
   const { ref, isInView } = useInView({ threshold: 0.2 });
+  const [imgError, setImgError] = useState(false);
 
   return (
     <motion.div
@@ -92,8 +113,16 @@ function ProjectRow({ project, index, reverse }: { project: Project; index: numb
       className={`group grid lg:grid-cols-12 gap-0 overflow-hidden rounded-[18px] bg-white border border-slate-200 hover:border-slate-300 hover:shadow-[0_12px_40px_rgba(15,23,42,0.08)] transition-all duration-400`}
     >
       <div className={`relative h-[260px] md:h-[320px] lg:h-auto overflow-hidden bg-slate-100 ${reverse ? "lg:order-2" : ""} lg:col-span-7`}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={project.image} alt={project.title} className="w-full h-full object-cover transition-transform duration-[900ms] group-hover:scale-[1.04]" loading="lazy" />
+        {project.image && !imgError ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img src={project.image} alt={project.title} className="w-full h-full object-cover transition-transform duration-[900ms] group-hover:scale-[1.04]" loading="lazy" onError={() => setImgError(true)} />
+        ) : (
+          <div className="w-full h-full bg-[#EAF4FF] flex items-center justify-center">
+            <span className="text-[13px] font-extrabold tracking-[-0.02em] text-[#7B93B5]">
+              COREX <span className="text-[#0057B8]">IT</span>
+            </span>
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#071A33]/30 via-transparent to-transparent opacity-60 group-hover:opacity-70 transition-opacity" />
         <span className="absolute top-4 left-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur border border-white/20 text-[11px] font-semibold tracking-[0.06em] uppercase text-[#071A33]">
           {project.year} · {project.category}

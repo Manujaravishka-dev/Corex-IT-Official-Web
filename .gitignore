@@ -30,8 +30,20 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files — never commit real Firebase keys or service-account JSON
+# .env.local holds NEXT_PUBLIC_* client keys + server-only Admin keys (FIREBASE_SERVICE_ACCOUNT_KEY, etc.)
+.env
+.env.local
+.env*.local
+.env.*.local
+!.env.example
+# Service account files — never commit
+*service-account*.json
+*serviceAccount*.json
+service-account*.json
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
+*firebase-adminsdk*.json
 
 # vercel
 .vercel

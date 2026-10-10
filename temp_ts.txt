@@ -1,0 +1,4 @@
+app/corexit-admin/page.tsx(1480,23): error TS1128: Declaration or statement expected.
+app/corexit-admin/page.tsx(1755,13): error TS1005: '}' expected.
+app/corexit-admin/page.tsx(2068,27): error TS1005: '}' expected.
+app/corexit-admin/page.tsx(2073,25): error TS1005: '}' expected.

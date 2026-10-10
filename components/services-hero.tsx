@@ -3,42 +3,25 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
-
-const SERVICES_IMAGES = [
-  {
-    src: "/images/corex-hero.jpg",
-    alt: "Software development — building scalable digital solutions",
-    pos: "object-[center_35%]",
-  },
-  {
-    src: "/images/corex-hero-2.jpg",
-    alt: "Web and mobile development workspace",
-    pos: "object-[center_40%]",
-  },
-  {
-    src: "/images/corex-hero-3.jpg",
-    alt: "UI/UX design and cloud technology solutions",
-    pos: "object-[center_42%]",
-  },
-  {
-    src: "/images/hero-bg.jpg",
-    alt: "Business technology and digital innovation",
-    pos: "object-[center_38%]",
-  },
-];
+import { useEffect, useState, useMemo } from "react";
+import { useWebsiteImages, toSlideImages } from "@/hooks/use-website-images";
 
 export function ServicesHero() {
+  const { images: dbImages } = useWebsiteImages("services");
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
+  const slides = useMemo(() => toSlideImages(dbImages), [dbImages]);
+  const hasSlides = slides.length > 0;
+  const safeIndex = Math.min(index, Math.max(slides.length - 1, 0));
+
   useEffect(() => {
-    if (paused) return;
+    if (paused || !hasSlides) return;
     const id = setInterval(() => {
-      setIndex((i) => (i + 1) % SERVICES_IMAGES.length);
+      setIndex((i) => (i + 1) % slides.length);
     }, 4500);
     return () => clearInterval(id);
-  }, [paused]);
+  }, [paused, slides.length, hasSlides]);
 
   return (
     <section
@@ -48,25 +31,29 @@ export function ServicesHero() {
       aria-label="Services hero"
     >
       <div className="absolute inset-0">
-        <AnimatePresence mode="popLayout">
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, scale: 1.04 }}
-            animate={{ opacity: 1, scale: 1.02 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute inset-0"
-          >
-            <Image
-              src={SERVICES_IMAGES[index].src}
-              alt={SERVICES_IMAGES[index].alt}
-              fill
-              priority={index === 0}
-              sizes="100vw"
-              className={`object-cover ${SERVICES_IMAGES[index].pos}`}
-            />
-          </motion.div>
-        </AnimatePresence>
+        {hasSlides ? (
+          <AnimatePresence mode="popLayout">
+            <motion.div
+              key={safeIndex}
+              initial={{ opacity: 0, scale: 1.04 }}
+              animate={{ opacity: 1, scale: 1.02 }}
+              exit={{ opacity: 0, scale: 1.02 }}
+              transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute inset-0"
+            >
+              <Image
+                src={slides[safeIndex].src}
+                alt={slides[safeIndex].alt}
+                fill
+                priority={safeIndex === 0}
+                sizes="100vw"
+                className={`object-cover ${slides[safeIndex].pos}`}
+              />
+            </motion.div>
+          </AnimatePresence>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-[#071A33] via-[#0A2450] to-[#040E1F]" />
+        )}
 
         <div className="absolute inset-0 bg-gradient-to-r from-[#071A33]/88 via-[#071A33]/62 to-[#071A33]/20" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#071A33]/60 via-transparent to-[#071A33]/18" />
@@ -147,13 +134,13 @@ export function ServicesHero() {
       </div>
 
       <div className="absolute z-20 bottom-5 md:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2.5">
-        {SERVICES_IMAGES.map((_, i) => (
+        {slides.map((_, i) => (
           <button
             key={i}
             aria-label={`Go to slide ${i + 1}`}
             onClick={() => setIndex(i)}
             className={`transition-all duration-300 rounded-none ${
-              i === index ? "w-8 h-1.5 bg-white" : "w-6 h-1.5 bg-white/40 hover:bg-white/70"
+              i === safeIndex ? "w-8 h-1.5 bg-white" : "w-6 h-1.5 bg-white/40 hover:bg-white/70"
             }`}
           />
         ))}

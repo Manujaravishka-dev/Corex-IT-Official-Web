@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { MergedInstanceAnimation } from "@/components/3d/MergedInstanceAnimation";
 
@@ -23,18 +24,27 @@ const HERO_IMAGES = [
     pos: "object-[center_45%]",
   },
 ];
+=======
+import { useEffect, useState, useMemo } from "react";
+import { useWebsiteImages, toSlideImages } from "@/hooks/use-website-images";
+>>>>>>> 2c025544e1f15a8d71a440e0c31624deb1a31c5f
 
 export function HeroSection() {
+  const { images: dbImages, loading } = useWebsiteImages("hero");
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
+  const slides = useMemo(() => toSlideImages(dbImages), [dbImages]);
+  const hasSlides = slides.length > 0;
+  const safeIndex = Math.min(index, Math.max(slides.length - 1, 0));
+
   useEffect(() => {
-    if (paused) return;
+    if (paused || !hasSlides) return;
     const id = setInterval(() => {
-      setIndex((i) => (i + 1) % HERO_IMAGES.length);
+      setIndex((i) => (i + 1) % slides.length);
     }, 4500);
     return () => clearInterval(id);
-  }, [paused]);
+  }, [paused, slides.length, hasSlides]);
 
   return (
     <section
@@ -42,44 +52,47 @@ export function HeroSection() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* === 3 IMAGES AUTO CHANGE — FULL-SCREEN PREMIUM === */}
       <div className="absolute inset-0">
-        <AnimatePresence mode="popLayout">
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, scale: 1.04 }}
-            animate={{ opacity: 1, scale: 1.02 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute inset-0"
-          >
-            <Image
-              src={HERO_IMAGES[index].src}
-              alt={HERO_IMAGES[index].alt}
-              fill
-              priority={index === 0}
-              sizes="100vw"
-              className={`object-cover ${HERO_IMAGES[index].pos}`}
-            />
-          </motion.div>
-        </AnimatePresence>
+        {hasSlides ? (
+          <AnimatePresence mode="popLayout">
+            <motion.div
+              key={safeIndex}
+              initial={{ opacity: 0, scale: 1.04 }}
+              animate={{ opacity: 1, scale: 1.02 }}
+              exit={{ opacity: 0, scale: 1.02 }}
+              transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute inset-0"
+            >
+              <Image
+                src={slides[safeIndex].src}
+                alt={slides[safeIndex].alt}
+                fill
+                priority={safeIndex === 0}
+                sizes="100vw"
+                className={`object-cover ${slides[safeIndex].pos}`}
+              />
+            </motion.div>
+          </AnimatePresence>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-[#071A33] via-[#0A2450] to-[#040E1F]" />
+        )}
 
-        {/* Subtle readable overlay — deep corporate blue, NOT too strong, left darker for headline */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#071A33]/85 via-[#071A33]/68 to-[#071A33]/18" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#071A33]/55 via-transparent to-[#071A33]/25" />
-        {/* Blue cinematic glow to match corporate system */}
         <div className="absolute -top-28 -right-24 w-[760px] h-[760px] rounded-full bg-[#0057B8]/18 blur-[90px] pointer-events-none" />
         <div className="absolute top-1/2 left-[42%] -translate-y-1/2 w-[900px] h-[520px] rounded-full bg-[#0057B8]/10 blur-[70px] pointer-events-none hidden lg:block" />
-        {/* very light grid for depth, subtle */}
         <div className="absolute inset-0 opacity-[0.045] bg-[linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] bg-[size:72px_72px] pointer-events-none" />
       </div>
 
+<<<<<<< HEAD
       {/* 3D Animation Layer — behind content, above images */}
       <div className="absolute inset-0 z-5 pointer-events-none">
         <MergedInstanceAnimation />
       </div>
 
       {/* content — ~100vh, image covers 100% width/height, text above */}
+=======
+>>>>>>> 2c025544e1f15a8d71a440e0c31624deb1a31c5f
       <div className="relative z-10 max-w-[1440px] mx-auto px-6 lg:px-10 flex items-center min-h-[86vh] md:min-h-[88vh] lg:min-h-[calc(100vh-80px)] py-12 md:py-16 lg:py-10">
         <div className="w-full max-w-[640px] xl:max-w-[660px]">
           <motion.div
@@ -167,21 +180,19 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* image indicators + pause hint */}
       <div className="absolute z-20 bottom-[18px] md:bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-10 flex items-center gap-2.5">
-        {HERO_IMAGES.map((_, i) => (
+        {slides.map((_, i) => (
           <button
             key={i}
             aria-label={`Go to slide ${i + 1}`}
             onClick={() => setIndex(i)}
             className={`transition-all duration-300 rounded-none ${
-              i === index ? "w-8 h-1.5 bg-white" : "w-6 h-1.5 bg-white/40 hover:bg-white/70"
+              i === safeIndex ? "w-8 h-1.5 bg-white" : "w-6 h-1.5 bg-white/40 hover:bg-white/70"
             }`}
           />
         ))}
       </div>
 
-      {/* bottom architectural line — clean transition into white marquee */}
       <div className="absolute bottom-0 inset-x-0 z-20 pointer-events-none">
         <div className="h-px bg-white/10" />
         <div className="hidden md:flex items-center justify-between max-w-[1440px] mx-auto px-6 lg:px-10 py-2.5">

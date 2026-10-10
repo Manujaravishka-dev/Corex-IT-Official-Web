@@ -1,0 +1,24 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Testimonial customer images — required path per spec: testimonials/customer-images/
+    match /testimonials/customer-images/{fileName} {
+      allow read: if true;
+      allow write, delete: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+    // Keep legacy path support for existing uploads
+    match /testimonials/{allPaths=**} {
+      allow read: if true;
+      allow write, delete: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+    // Fallback: admin full access elsewhere, public read
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write, delete: if request.auth != null;
+    }
+  }
+}

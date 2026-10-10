@@ -4,7 +4,7 @@ import { BlueFeatureSection } from "@/components/blue-feature-section";
 import { ServicesHero } from "@/components/services-hero";
 
 export const metadata: Metadata = {
-  title: "Services — Corex IT",
+  title: "Software Development Services | Corex IT",
   description:
     "Enterprise-grade services from Corex IT — Web, Mobile, Custom Software, UI/UX, Backend & API, Cloud & DevOps and IT Consulting.",
 };

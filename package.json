@@ -11,7 +11,13 @@
   "dependencies": {
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
+<<<<<<< HEAD
     "firebase": "^12.18.0",
+=======
+    "cloudinary": "^2.11.0",
+    "firebase": "^12.18.0",
+    "firebase-admin": "13.10.0",
+>>>>>>> 2c025544e1f15a8d71a440e0c31624deb1a31c5f
     "framer-motion": "^13.1.1",
     "lucide-react": "^1.34.0",
     "next": "16.3.3",

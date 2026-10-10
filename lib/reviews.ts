@@ -15,79 +15,10 @@ export type ReviewsResponse = {
   reviews: Review[];
 };
 
-// Initial seed data — premium enterprise testimonials that match Corex IT tone.
-// This is NOT hardcoded final data; it serves as fallback/seed and is replaced
-// once connected to a real database. POST /api/reviews will persist new entries
-// in-memory (and to file when available) so UI updates dynamically.
-// imageUrl is data-driven — change the URL to update the customer's photo.
-export const initialReviews: Review[] = [
-  {
-    id: "1",
-    name: "Amal Perera",
-    email: "amal@nexus.example",
-    company: "Operations Director, Nexus Analytics",
-    rating: 5,
-    comment:
-      "Corex IT delivered our analytics platform on time with exceptional quality. Clean architecture, clear communication, and a team that truly owns the outcome.",
-    createdAt: "2024-11-02T10:00:00.000Z",
-    imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face",
-  },
-  {
-    id: "2",
-    name: "Sarah Fernando",
-    email: "sarah@retail.example",
-    company: "Founder, MarketPlace Pro",
-    rating: 5,
-    comment:
-      "From discovery to deployment, the process was transparent and disciplined. Our e-commerce platform scales beautifully and the support has been outstanding.",
-    createdAt: "2024-10-18T10:00:00.000Z",
-    imageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face",
-  },
-  {
-    id: "3",
-    name: "David Wijesinghe",
-    email: "david@careportal.example",
-    company: "CTO, CarePortal Health",
-    rating: 5,
-    comment:
-      "The Corex team understood our compliance and UX requirements deeply. They built a secure, maintainable system we can confidently scale.",
-    createdAt: "2024-09-25T10:00:00.000Z",
-    imageUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face",
-  },
-  {
-    id: "4",
-    name: "Nimali Jayawardene",
-    email: "nimali@edu.example",
-    company: "Product Lead, Edu Platform",
-    rating: 4,
-    comment:
-      "Professional, responsive, and quality-focused. Our new learning management features were shipped without disruption to existing users.",
-    createdAt: "2024-08-14T10:00:00.000Z",
-    imageUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=face",
-  },
-  {
-    id: "5",
-    name: "Ravindu Silva",
-    email: "ravindu@logistics.example",
-    company: "CEO, LogiTrack",
-    rating: 5,
-    comment:
-      "Engineering discipline that shows. Code reviews, documentation, and performance have all been top-tier. A partnership we trust.",
-    createdAt: "2024-07-30T10:00:00.000Z",
-    imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face",
-  },
-  {
-    id: "6",
-    name: "Emily Carter",
-    email: "emily@startup.example",
-    company: "Founder, StartUp Studio",
-    rating: 5,
-    comment:
-      "Corex IT turned our idea into a polished product in weeks. Their UI/UX and backend craft made fundraising easy — investors noticed.",
-    createdAt: "2024-07-10T10:00:00.000Z",
-    imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=face",
-  },
-];
+// Deprecated: hardcoded testimonials removed — public site now loads dynamically from Firestore `testimonials` where status="published".
+// Do NOT use this as fallback. See lib/firebase.ts + components/testimonials-section.tsx for Firestore integration.
+// This empty array prevents duplicate hardcoded data while keeping Review type for legacy validation.
+export const initialReviews: Review[] = [];
 
 export function validateReviewInput(data: unknown): {
   valid: boolean;

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { projects, projectCategories } from "@/lib/projects";
 import { ProjectsHero } from "@/components/projects-hero";
+import { ProjectImage } from "@/components/project-image";
 
 export default function ProjectsClient() {
   const [active, setActive] = useState<(typeof projectCategories)[number]>("All Projects");
@@ -57,6 +58,10 @@ export default function ProjectsClient() {
           </div>
         ) : (
           <div className="space-y-6">
+            {/* TEMPORARILY COMMENTED OUT — project cards hidden.
+                Re-enable by uncommenting the block below. Project data in
+                `@/lib/projects` is preserved and NOT deleted. */}
+            {/*
             {filtered.map((p, i) => (
               <Link
                 key={p.id}
@@ -64,8 +69,7 @@ export default function ProjectsClient() {
                 className="group grid lg:grid-cols-12 gap-0 overflow-hidden rounded-[18px] bg-white border border-slate-200 hover:border-slate-300 hover:shadow-[0_12px_40px_rgba(7,26,51,0.08)] transition-all duration-300"
               >
                 <div className={`relative h-[260px] md:h-[360px] lg:h-[380px] overflow-hidden bg-slate-100 ${i % 2 === 1 ? "lg:order-2" : ""} lg:col-span-7`}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.image} alt={p.title} className="w-full h-full object-cover transition-transform duration-[900ms] group-hover:scale-[1.03]" loading="lazy" />
+                  <ProjectImage slug={p.slug} alt={p.title} className="w-full h-full object-cover transition-transform duration-[900ms] group-hover:scale-[1.03]" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#071A33]/30 via-transparent to-transparent opacity-60 group-hover:opacity-50 transition-opacity" />
                   <span className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur border border-white/20 text-[11px] font-semibold tracking-[0.06em] uppercase text-[#071A33]">
                     {p.year} · {p.category}
@@ -91,6 +95,7 @@ export default function ProjectsClient() {
                 </div>
               </Link>
             ))}
+            */}
           </div>
         )}
       </section>

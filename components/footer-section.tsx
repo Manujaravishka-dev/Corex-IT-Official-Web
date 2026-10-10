@@ -1,4 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { reportPublicFirestoreError } from "@/lib/firestore-errors";
+import { COLLECTIONS, SETTINGS_DOC_ID, type CompanySettings } from "@/lib/firestore-types";
+import { defaultCompanySettings } from "@/lib/site-settings";
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
@@ -32,29 +41,6 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
-const socialLinks = [
-  {
-    name: "Facebook",
-    url: "https://facebook.com/your-page",
-    icon: FacebookIcon,
-  },
-  {
-    name: "GitHub",
-    url: "https://github.com/your-profile",
-    icon: GithubIcon,
-  },
-  {
-    name: "TikTok",
-    url: "https://tiktok.com/@your-profile",
-    icon: TikTokIcon,
-  },
-  {
-    name: "LinkedIn",
-    url: "https://linkedin.com/company/your-company",
-    icon: LinkedinIcon,
-  },
-];
-
 const links = {
   quick: [
     { label: "Home", href: "/" },
@@ -81,6 +67,33 @@ const links = {
 };
 
 export function Footer() {
+  const pathname = usePathname();
+  const [settings, setSettings] = useState<CompanySettings>(defaultCompanySettings);
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchSettings() {
+      try {
+        const snap = await getDoc(doc(db, COLLECTIONS.settings, SETTINGS_DOC_ID));
+        if (!cancelled && snap.exists()) {
+          setSettings({ ...defaultCompanySettings, ...(snap.data() as CompanySettings) });
+        }
+      } catch (err) {
+        reportPublicFirestoreError(`${COLLECTIONS.settings}/${SETTINGS_DOC_ID}`, "get", err);
+        // keep defaults for public visitors
+      }
+    }
+    fetchSettings();
+    return () => { cancelled = true; };
+  }, []);
+  if (pathname?.startsWith("/corexit-admin")) return null;
+
+  const dynamicSocialLinks = [
+    { name: "Facebook", url: settings.facebook, icon: FacebookIcon },
+    { name: "GitHub", url: settings.github, icon: GithubIcon },
+    { name: "TikTok", url: settings.tiktok, icon: TikTokIcon },
+    { name: "LinkedIn", url: settings.linkedin, icon: LinkedinIcon },
+  ];
+
   return (
     <footer className="bg-[#071A33] border-t border-white/[0.06]">
       <div className="h-px w-full bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
@@ -96,7 +109,7 @@ export function Footer() {
               Professional Software & Digital Solutions. Building scalable products for businesses ready to grow — from Colombo to the world.
             </p>
             <div className="mt-6 flex gap-3">
-              {socialLinks.map((social) => {
+              {dynamicSocialLinks.map((social) => {
                 const Icon = social.icon;
                 return (
                   <a
@@ -128,22 +141,19 @@ export function Footer() {
           <div className="md:col-span-3">
             <p className="text-[11px] font-semibold tracking-[0.14em] uppercase text-white/40 mb-4">Services</p>
             <nav className="space-y-2.5">
-              {links.services.slice(0, 4).map((l) => (
+{links.services.slice(0, 4).map((l) => (
                 <Link key={l.label} href={l.href} className="block text-[13px] text-white/60 hover:text-white transition-colors">
                   {l.label}
                 </Link>
               ))}
               <div className="flex flex-wrap items-center gap-2 text-[13px]">
                 <Link href="/#services" className="text-white/60 hover:text-white transition-colors">
-                  Cloud &amp; DevOps
+                  Cloud & DevOps
                 </Link>
-                <span className="text-white/20">·</span>
-                <Link href="/privacy-policy" className="text-red-400 hover:text-red-300 transition-colors">
-                  Privacy Policy
-                </Link>
-                <span className="text-white/20">·</span>
-                <Link href="/terms-and-conditions" className="text-red-400 hover:text-red-300 transition-colors">
-                  Terms &amp; Conditions
+              </div>
+              <div className="mt-2">
+                <Link href="/terms-and-conditions" className="text-white hover:text-[#A0A0A0] transition-colors block">
+                  Terms & Conditions
                 </Link>
               </div>
             </nav>
@@ -152,8 +162,9 @@ export function Footer() {
           <div className="md:col-span-3">
             <p className="text-[11px] font-semibold tracking-[0.14em] uppercase text-white/40 mb-4">Contact</p>
             <div className="space-y-3 text-[13px] leading-[1.6] text-white/60">
-              <p>hello@corexit.com</p>
-              <p>Colombo, Sri Lanka</p>
+              <p>{settings.email}</p>
+              <p>{settings.address}</p>
+              {settings.phone && <p>{settings.phone}</p>}
               <Link href="/contact" className="inline-flex items-center gap-1.5 text-white font-semibold hover:text-[#8AB6FF] transition-colors">
                 Get in touch
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">

@@ -1,0 +1,25 @@
+[debug] [2026-09-23T15:31:32.477Z] ----------------------------------------------------------------------
+[debug] [2026-09-23T15:31:32.483Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Manuja Ravishka\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js emulators:exec --project demo-corexit-permissions --config firebase.test.json --only auth firestore node scripts/test-firestore-security.mjs
+[debug] [2026-09-23T15:31:32.483Z] CLI Version:   15.28.2
+[debug] [2026-09-23T15:31:32.483Z] Platform:      win32
+[debug] [2026-09-23T15:31:32.484Z] Node Version:  v24.18.0
+[debug] [2026-09-23T15:31:32.484Z] Detected Agent: open_code
+[debug] [2026-09-23T15:31:32.484Z] Time:          Wed Sep 23 2026 21:01:32 GMT+0530 (India Standard Time)
+[debug] [2026-09-23T15:31:32.484Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-09-23T15:31:35.845Z] java version "25.0.3" 2026-04-21 LTS
+
+[debug] [2026-09-23T15:31:35.846Z] Java(TM) SE Runtime Environment (build 25.0.3+9-LTS-195)
+Java HotSpot(TM) 64-Bit Server VM (build 25.0.3+9-LTS-195, mixed mode, sharing)
+
+[debug] [2026-09-23T15:31:35.872Z] Parsed Java major version: 25
+[info] i  emulators: Starting emulators: auth, firestore {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: auth, firestore"}}
+[info] i  emulators: Detected demo project ID "demo-corexit-permissions", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail. {"metadata":{"emulator":{"name":"hub"},"message":"Detected demo project ID \"demo-corexit-permissions\", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail."}}
+[debug] [2026-09-23T15:31:35.893Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-09-23T15:31:35.894Z] assigned listening specs for emulators {"user":{"auth":[{"address":"127.0.0.1","family":"IPv4","port":9099}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2026-09-23T15:31:35.908Z] Found emulator hub locator: {"version":"15.28.2","origins":["http://127.0.0.1:4400","http://[::1]:4400"],"pid":9176}
+[debug] [2026-09-23T15:31:35.908Z] Write emulator hub locator at C:\Users\MANUJA~1\AppData\Local\Temp\hub-demo-corexit-permissions.json
+[info] i  firestore: downloading cloud-firestore-emulator-v1.22.0.jar... {"metadata":{"emulator":{"name":"firestore"},"message":"downloading cloud-firestore-emulator-v1.22.0.jar..."}}
+[debug] [2026-09-23T15:31:35.939Z] >>> [apiv2][query] GET https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.22.0.jar 
+[debug] [2026-09-23T15:31:37.291Z] <<< [apiv2][status] GET https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.22.0.jar 200
+[debug] [2026-09-23T15:31:37.291Z] <<< [apiv2][body] GET https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.22.0.jar [stream]

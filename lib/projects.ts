@@ -26,11 +26,8 @@ export const projects: Project[] = [
     type: "Web Application",
     industry: "Finance",
     year: "2024",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80",
-    images: [
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1460925895917-41dcfbf4dcea?auto=format&fit=crop&w=1200&q=80",
-    ],
+    image: "",
+    images: [],
     description:
       "Real-time analytics platform for enterprise data — interactive dashboards, drill-downs and sub-40ms queries for finance teams.",
     overview:
@@ -57,11 +54,8 @@ export const projects: Project[] = [
     type: "E-Commerce Platform",
     industry: "Retail",
     year: "2024",
-    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1600&q=80",
-    images: [
-      "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?auto=format&fit=crop&w=1200&q=80",
-    ],
+    image: "",
+    images: [],
     description:
       "Full-featured marketplace with vendor management, payments, inventory and real-time order tracking at scale.",
     overview:
@@ -88,11 +82,8 @@ export const projects: Project[] = [
     type: "Mobile Application",
     industry: "Productivity",
     year: "2023",
-    image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7dfb?auto=format&fit=crop&w=1600&q=80",
-    images: [
-      "https://images.unsplash.com/photo-1512941937669-90a1b58e7dfb?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1551650975-87deedd944c3?auto=format&fit=crop&w=1200&q=80",
-    ],
+    image: "",
+    images: [],
     description:
       "Cross-platform productivity app with sync, drag-and-drop workflows and intelligent notifications.",
     overview:
@@ -119,11 +110,8 @@ export const projects: Project[] = [
     type: "Healthcare Platform",
     industry: "Healthcare",
     year: "2023",
-    image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80",
-    images: [
-      "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1586776802477-8a5d3c4c4f4e?auto=format&fit=crop&w=1200&q=80",
-    ],
+    image: "",
+    images: [],
     description:
       "Patient management with scheduling, medical records, telehealth and HIPAA-compliant data handling.",
     overview:

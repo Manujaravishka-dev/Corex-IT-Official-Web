@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Reuse the existing admin panel and verifyAdminIdToken authorization model.
+    // This project treats Firebase Auth accounts as admins (no separate role claim).
+    function isAdmin() {
+      return request.auth != null;
+    }
+
+    // Public Testimonials: public can read published only via where(status=="published") + orderBy(createdAt)
+    // Spec: getDocs(query(collection(db,"testimonials"), where("status","==","published"), orderBy("createdAt","desc"))) must succeed for public.
+    // Admin (isAdmin()) can read all, including hidden and pending, and can create/update/delete.
+    // Anonymous users MUST NOT directly write testimonials (enforced via server API + transaction)
+    match /testimonials/{docId} {
+      allow get, list: if isAdmin() || resource.data.status == "published";
+      allow create, update, delete: if isAdmin();
+    }
+
+    // One-time testimonial invites: NOT publicly readable/writable.
+    // All invite operations (create/list/validate/submit) are performed via secure server-side API routes
+    // using Firebase Admin SDK (bypasses rules). Browser direct access is denied to prevent enumeration and token leakage.
+    // Only Admin SDK can read/write this collection.
+    match /testimonial_invites/{token} {
+      allow read, write: if false;
+    }
+
+    // Public Contact Form: visitor NOT logged in can create; must NOT read/update/delete
+    // Admin can list/read/update/delete (onSnapshot/query/getDocs/updateDoc/deleteDoc)
+    match /contact_messages/{docId} {
+      allow create: if true;
+      allow get, list, update, delete: if isAdmin();
+    }
+
+    // Admin Settings: settings/company via setDoc(...,{merge:true}) and getDoc
+    // Public may read if footer needs it; only admin can write
+    match /settings/{docId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Website Images: managed by admin via Cloudinary + Firestore
+    // Public can read all images (public-facing content); only admin can create/update/delete
+    match /websiteImages/{docId} {
+      allow get: if isAdmin() || resource.data.isActive == true;
+      allow list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Company Highlights: admin-managed public statistics shown on the Home page.
+    // Data lives in a single document `company_highlights/main` (fields: projectsCompleted,
+    // projectsSuffix, happyClients, clientsSuffix, teamMembers, teamSuffix, yearsExperience,
+    // yearsSuffix, updatedAt). Any visitor may read so the public Home page (client-side
+    // onSnapshot/getDoc) can render the stats; only authenticated admin may write.
+    match /company_highlights/{docId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Client Brands: admin-managed brand logos shown in the Home page marquee.
+    // Anyone may read brands; only an authenticated admin may create/update/delete.
+    match /client_brands/{docId} {
+      allow get, list: if true;
+      allow create, update, delete: if request.auth != null;
+    }
+
+    // Blogs: public can read all (public-facing articles); only admin can create/update/delete
+    match /blogs/{docId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Explicitly also allow settings/company sub-case (redundant but clear)
+    match /settings/company {
+      allow get: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Fallback deny all else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

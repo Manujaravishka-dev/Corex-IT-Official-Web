@@ -3,43 +3,25 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
-
-// Reuse high-quality images from existing public assets — no duplication
-const ABOUT_IMAGES = [
-  {
-    src: "/images/corex-hero-2.jpg",
-    alt: "Corex IT team collaborating on modern software solutions",
-    pos: "object-[center_38%]",
-  },
-  {
-    src: "/images/corex-hero.jpg",
-    alt: "Technology and digital innovation — Corex IT engineering",
-    pos: "object-[center_35%]",
-  },
-  {
-    src: "/images/corex-hero-3.jpg",
-    alt: "Digital transformation and business collaboration",
-    pos: "object-[center_42%]",
-  },
-  {
-    src: "/images/hero-bg.jpg",
-    alt: "Modern business and software development environment",
-    pos: "object-[center_40%]",
-  },
-];
+import { useEffect, useState, useMemo } from "react";
+import { useWebsiteImages, toSlideImages } from "@/hooks/use-website-images";
 
 export function AboutHero() {
+  const { images: dbImages } = useWebsiteImages("about");
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
+  const slides = useMemo(() => toSlideImages(dbImages), [dbImages]);
+  const hasSlides = slides.length > 0;
+  const safeIndex = Math.min(index, Math.max(slides.length - 1, 0));
+
   useEffect(() => {
-    if (paused) return;
+    if (paused || !hasSlides) return;
     const id = setInterval(() => {
-      setIndex((i) => (i + 1) % ABOUT_IMAGES.length);
+      setIndex((i) => (i + 1) % slides.length);
     }, 4500);
     return () => clearInterval(id);
-  }, [paused]);
+  }, [paused, slides.length, hasSlides]);
 
   return (
     <section
@@ -48,42 +30,40 @@ export function AboutHero() {
       onMouseLeave={() => setPaused(false)}
       aria-label="About hero"
     >
-      {/* Background image slider — 50–60vh, not full-screen */}
       <div className="absolute inset-0">
-        <AnimatePresence mode="popLayout">
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, scale: 1.04 }}
-            animate={{ opacity: 1, scale: 1.02 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute inset-0"
-          >
-            <Image
-              src={ABOUT_IMAGES[index].src}
-              alt={ABOUT_IMAGES[index].alt}
-              fill
-              priority={index === 0}
-              sizes="100vw"
-              className={`object-cover ${ABOUT_IMAGES[index].pos}`}
-            />
-          </motion.div>
-        </AnimatePresence>
+        {hasSlides ? (
+          <AnimatePresence mode="popLayout">
+            <motion.div
+              key={safeIndex}
+              initial={{ opacity: 0, scale: 1.04 }}
+              animate={{ opacity: 1, scale: 1.02 }}
+              exit={{ opacity: 0, scale: 1.02 }}
+              transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute inset-0"
+            >
+              <Image
+                src={slides[safeIndex].src}
+                alt={slides[safeIndex].alt}
+                fill
+                priority={safeIndex === 0}
+                sizes="100vw"
+                className={`object-cover ${slides[safeIndex].pos}`}
+              />
+            </motion.div>
+          </AnimatePresence>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-[#071A33] via-[#0A2450] to-[#040E1F]" />
+        )}
 
-        {/* Premium dark/blue gradient overlay for readability — matches Home hero treatment */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#071A33]/88 via-[#071A33]/62 to-[#071A33]/20" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#071A33]/60 via-transparent to-[#071A33]/18" />
-        {/* subtle blue glow */}
         <div className="absolute -top-24 -right-20 w-[640px] h-[640px] rounded-full bg-[#0057B8]/16 blur-[80px] pointer-events-none" />
         <div className="absolute top-1/2 left-[38%] -translate-y-1/2 w-[760px] h-[480px] rounded-full bg-[#0057B8]/10 blur-[60px] pointer-events-none hidden lg:block" />
-        {/* very subtle grid */}
         <div className="absolute inset-0 opacity-[0.035] bg-[linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] bg-[size:72px_72px] pointer-events-none" />
       </div>
 
-      {/* Content — positioned like Home hero (center-left), 50–60vh height */}
       <div className="relative z-10 max-w-[1440px] mx-auto px-6 lg:px-10 flex items-center min-h-[52vh] md:min-h-[56vh] lg:min-h-[60vh] py-10 md:py-14 lg:py-12">
         <div className="w-full max-w-[680px] xl:max-w-[700px]">
-          {/* subtle label */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -97,7 +77,6 @@ export function AboutHero() {
             <span className="hidden sm:inline text-[10px] tracking-[0.12em] uppercase text-white/50">Est. Colombo · Sri Lanka</span>
           </motion.div>
 
-          {/* Heading — matches Home hero typography hierarchy */}
           <motion.h1
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
@@ -154,21 +133,19 @@ export function AboutHero() {
         </div>
       </div>
 
-      {/* elegant slider indicators — bottom center, matches Home design */}
       <div className="absolute z-20 bottom-5 md:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2.5">
-        {ABOUT_IMAGES.map((_, i) => (
+        {slides.map((_, i) => (
           <button
             key={i}
             aria-label={`Go to slide ${i + 1}`}
             onClick={() => setIndex(i)}
             className={`transition-all duration-300 rounded-none ${
-              i === index ? "w-8 h-1.5 bg-white" : "w-6 h-1.5 bg-white/40 hover:bg-white/70"
+              i === safeIndex ? "w-8 h-1.5 bg-white" : "w-6 h-1.5 bg-white/40 hover:bg-white/70"
             }`}
           />
         ))}
       </div>
 
-      {/* subtle bottom line */}
       <div className="absolute bottom-0 inset-x-0 z-10 pointer-events-none">
         <div className="h-px bg-white/10" />
       </div>

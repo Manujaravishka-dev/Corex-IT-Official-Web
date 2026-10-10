@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProjectBySlug, getRelatedProjects, projects } from "@/lib/projects";
+import { ProjectImage } from "@/components/project-image";
 
 export async function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }));
@@ -28,8 +29,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     <div className="bg-white">
       {/* hero image */}
       <div className="relative w-full h-[380px] md:h-[480px] lg:h-[520px] overflow-hidden bg-slate-100">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={project.image} alt={project.title} className="w-full h-full object-cover" />
+        <ProjectImage slug={project.slug} alt={project.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#071A33]/60 via-[#071A33]/20 to-transparent" />
         <div className="absolute bottom-0 inset-x-0 max-w-[1440px] mx-auto px-6 lg:px-10 pb-8 md:pb-10">
           <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur border border-white/20 text-[11px] font-semibold tracking-[0.06em] uppercase text-[#071A33]">
@@ -91,8 +91,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 <h3 className="text-[13px] font-semibold tracking-[0.12em] uppercase text-[#071A33] mb-4">Additional Screenshots</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   {project.images.map((img, i) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img key={i} src={img} alt={`${project.title} screenshot ${i + 1}`} className="w-full h-[260px] object-cover rounded-[14px] border border-slate-200" />
+                    <ProjectImage key={i} slug={project.slug} alt={`${project.title} screenshot ${i + 1}`} className="w-full h-[260px] object-cover rounded-[14px] border border-slate-200" />
                   ))}
                 </div>
               </div>
@@ -138,8 +137,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <div className="grid md:grid-cols-2 gap-6">
               {related.map((p) => (
                 <Link key={p.id} href={`/projects/${p.slug}`} className="group flex gap-4 rounded-[14px] border border-slate-200 bg-white p-4 hover:border-slate-300 hover:shadow-sm transition-all">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.image} alt={p.title} className="w-28 h-20 object-cover rounded-[10px] shrink-0" />
+                  <ProjectImage slug={p.slug} alt={p.title} className="w-28 h-20 object-cover rounded-[10px] shrink-0" />
                   <div>
                     <p className="text-[11px] tracking-[0.08em] uppercase text-[#0057B8] font-semibold">{p.category}</p>
                     <h4 className="text-[15px] font-semibold text-[#071A33] group-hover:text-[#0057B8] transition-colors">{p.title}</h4>

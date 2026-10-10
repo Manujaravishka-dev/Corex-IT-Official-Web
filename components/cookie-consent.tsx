@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
 import { X, Cookie, ShieldCheck } from "lucide-react";
 
 const STORAGE_KEY = "cookie-consent-accepted";
@@ -9,6 +10,8 @@ const DISMISSED_KEY = "cookie-consent-dismissed-at";
 const RESHOW_DELAY_MS = 60_000; // 1 minute
 
 export function CookieConsent() {
+  const pathname = usePathname();
+  const isAdmin = pathname?.startsWith("/corexit-admin");
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -19,6 +22,7 @@ export function CookieConsent() {
   }, []);
 
   useEffect(() => {
+    if (isAdmin) return;
     if (!mounted) return;
 
     // If already accepted, never show
@@ -113,6 +117,7 @@ export function CookieConsent() {
     return () => clearTimer();
   }, []);
 
+  if (isAdmin) return null;
   if (!mounted) return null;
 
   return (

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ContactSection } from "@/components/contact-section";
 
 export const metadata: Metadata = {
-  title: "Contact — Corex IT",
+  title: "Contact Us | Corex IT",
   description:
     "Get in touch with Corex IT — tell us about your project and let's explore how we can help you build a reliable digital solution.",
 };
@@ -27,7 +27,7 @@ export default function ContactPage() {
             <span className="font-light text-white/90">your project.</span>
           </h1>
           <p className="text-[15px] leading-[1.7] text-white/70 max-w-[560px] mt-4">
-            Have an idea worth building? Share a few details and we&apos;ll get back to you to discuss how Corex IT can help you design, build and scale it.
+            Have an idea worth building? Share a few details and we will get back to you to discuss how Corex IT can help you design, build and scale it.
           </p>
         </div>
       </section>
