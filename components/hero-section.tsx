@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
+import { MergedInstanceAnimation } from "@/components/3d/MergedInstanceAnimation";
 
 const HERO_IMAGES = [
   {
@@ -71,6 +72,11 @@ export function HeroSection() {
         <div className="absolute top-1/2 left-[42%] -translate-y-1/2 w-[900px] h-[520px] rounded-full bg-[#0057B8]/10 blur-[70px] pointer-events-none hidden lg:block" />
         {/* very light grid for depth, subtle */}
         <div className="absolute inset-0 opacity-[0.045] bg-[linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] bg-[size:72px_72px] pointer-events-none" />
+      </div>
+
+      {/* 3D Animation Layer — behind content, above images */}
+      <div className="absolute inset-0 z-5 pointer-events-none">
+        <MergedInstanceAnimation />
       </div>
 
       {/* content — ~100vh, image covers 100% width/height, text above */}
