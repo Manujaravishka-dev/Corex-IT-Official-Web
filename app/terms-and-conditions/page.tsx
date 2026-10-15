@@ -13,8 +13,8 @@ const sections = [
     title: "Acceptance of Terms",
     number: "1",
     content: [
-      "Welcome to Corex IT. By accessing or using our website, services, and any related content, features, or applications provided by Corex IT (\"we,\" \"us,\" or \"our\"), you agree to be bound by these Terms & Conditions.",
-      "If you do not agree with these Terms, please do not use our website or services. Your continued use of our website after any updates constitutes acceptance of the revised Terms.",
+      "By accessing or using the Corex IT website or services, you agree to be bound by these Terms & Conditions. If you do not agree with these Terms, please do not use our website or services.",
+      "We may update these Terms from time to time. Continued use of our website or services after any changes constitutes acceptance of the updated Terms. Please review this page periodically for updates.",
     ],
   },
   {
@@ -22,8 +22,8 @@ const sections = [
     title: "Services",
     number: "2",
     content: [
-      "Corex IT provides professional software development, web and mobile application development, UI/UX design, cloud and DevOps, and related IT consulting services. Service descriptions, timelines, and deliverables are agreed upon through proposals, statements of work, or written communication.",
-      "We reserve the right to modify, suspend, or discontinue any service or feature at any time. Where applicable, we will communicate changes to affected clients in advance.",
+      "Corex IT provides software development, web and mobile application development, UI/UX design, cloud and DevOps, and IT consulting services. Service scope, timelines, and deliverables are agreed upon through proposals, statements of work, or written agreements.",
+      "We reserve the right to modify, suspend, or discontinue any service or feature. Where applicable, affected clients will be notified of significant changes in advance.",
     ],
   },
   {
@@ -31,8 +31,8 @@ const sections = [
     title: "Intellectual Property",
     number: "3",
     content: [
-      "Unless otherwise stated in a written agreement, the website's design, layout, graphics, logos (including COREX IT branding), text, and other content are owned by Corex IT or our licensors and are protected by intellectual property laws.",
-      "Client-specific deliverables, source code, and assets are transferred or licensed as specified in the relevant project agreement. You may not reproduce, distribute, or create derivative works from our content without prior written permission, except as expressly allowed for normal browsing.",
+      "Unless otherwise stated in a written agreement, the Corex IT website, including its design, graphics, logos, branding, text, and other content, is owned by Corex IT or its licensors and is protected by applicable intellectual property laws.",
+      "Ownership or licensing of client-specific deliverables, source code, and assets will be determined by the applicable project agreement. You may not reproduce, modify, distribute, or use our content without prior written permission, except as permitted for normal website use.",
     ],
   },
   {
@@ -40,9 +40,9 @@ const sections = [
     title: "Client Responsibilities",
     number: "4",
     content: [
-      "When you engage our services or submit information through our website (such as contact forms or project inquiries), you agree to provide accurate, current, and complete information and to keep it updated.",
-      "You are responsible for maintaining the confidentiality of any credentials or access we provide and for all activities that occur under your account. You agree to notify us promptly of any unauthorized use.",
-      "You agree not to use our services for any unlawful, abusive, or fraudulent purpose, and to comply with all applicable laws and regulations in Sri Lanka and your jurisdiction.",
+      "When engaging our services or submitting information through our website, you agree to provide accurate, complete, and up-to-date information.",
+      "You are responsible for maintaining the confidentiality of any credentials or access provided by Corex IT and for all activities conducted through your account. Any unauthorized use should be reported to us promptly.",
+      "You agree not to use our website or services for any unlawful, fraudulent, abusive, or unauthorized purpose and to comply with all applicable laws and regulations.",
     ],
   },
   {
@@ -50,8 +50,8 @@ const sections = [
     title: "Payment Terms",
     number: "5",
     content: [
-      "Fees, payment schedules, and milestones are detailed in the proposal or invoice. Payments are due as per the agreed terms. Late payments may be subject to reminders and, where agreed, interest or suspension of work until settlement.",
-      "Any estimates provided are based on the scope understood at the time of proposal. Changes in scope, third-party costs, or client-requested additions may affect the final price and will be communicated before proceeding.",
+      "Fees, payment schedules, and project milestones will be outlined in the applicable proposal, quotation, or invoice. Payments are due according to the agreed terms. Late payments may result in reminders, applicable charges, or suspension of work until outstanding amounts are settled.",
+      "Any estimates are based on the agreed scope at the time of quotation. Changes to the scope, additional requirements, or third-party costs may affect the final fee. Any such changes will be communicated and agreed upon before additional work proceeds.",
     ],
   },
   {
@@ -59,8 +59,8 @@ const sections = [
     title: "Confidentiality",
     number: "6",
     content: [
-      "Each party agrees to protect confidential information disclosed by the other party, whether marked as confidential or reasonably understood to be confidential. This includes business information, source code, designs, and technical data.",
-      "Confidential information shall not be disclosed to third parties without prior written consent, except to employees or contractors who need to know and are bound by confidentiality obligations, or as required by law.",
+      "Both parties agree to protect and keep confidential any non-public information shared during the course of a project or business relationship. This may include business information, source code, designs, technical data, and other information reasonably considered confidential.",
+      "Confidential information will not be disclosed to third parties without prior written consent, except where required by law or shared with employees, contractors, or professional advisers who require access and are bound by appropriate confidentiality obligations.",
     ],
   },
   {
@@ -68,8 +68,8 @@ const sections = [
     title: "Limitation of Liability",
     number: "7",
     content: [
-      "To the fullest extent permitted by law, Corex IT, its directors, employees, and partners shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits, revenue, data, or use, arising out of or related to your use of the website or services.",
-      "Our total liability for any claim arising from the website or services shall not exceed the amount paid by you, if any, for the specific service giving rise to the claim in the three months preceding the claim.",
+      "To the fullest extent permitted by applicable law, Corex IT shall not be liable for any indirect, incidental, special, or consequential loss or damage, including loss of profits, revenue, data, or business arising from the use of our website or services.",
+      "To the extent permitted by law, Corex IT’s total liability for any claim relating to our website or services shall not exceed the amount paid by the client for the specific service giving rise to the claim during the three months preceding the claim.",
     ],
   },
   {
@@ -77,8 +77,8 @@ const sections = [
     title: "Warranties and Disclaimers",
     number: "8",
     content: [
-      "Our website and services are provided on an \"as is\" and \"as available\" basis without warranties of any kind, whether express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, and non-infringement.",
-      "We do not warrant that the website will be uninterrupted, error-free, or free from harmful components, or that defects will be corrected. We strive to keep information accurate but do not guarantee completeness or reliability for every purpose.",
+      "Our website and services are provided on an “as is” and “as available” basis, without warranties of any kind, whether express or implied, to the fullest extent permitted by applicable law.",
+      "We do not guarantee that our website or services will be uninterrupted, error-free, secure, or free from harmful components, or that any defects will be corrected. While we make reasonable efforts to provide accurate and up-to-date information, we do not guarantee that all content is complete, accurate, or suitable for every purpose.",
     ],
   },
   {
@@ -86,25 +86,25 @@ const sections = [
     title: "Termination",
     number: "9",
     content: [
-      "We may suspend or terminate your access to the website or services at any time if you breach these Terms or if we are required to do so by law. You may also discontinue use of our website at any time.",
-      "Upon termination, your right to use the website will cease immediately, but provisions that by their nature should survive (such as intellectual property, confidentiality, and limitation of liability) will remain in effect.",
+      "Corex IT may suspend or terminate your access to our website or services if you breach these Terms or where required by applicable law. You may discontinue use of our website or services at any time.",
+      "Upon termination, your right to access or use our website and services will cease immediately. Provisions that by their nature should survive termination, including intellectual property, confidentiality, and limitation of liability, will remain in effect.",
     ],
   },
-  {
-    id: "governing-law",
-    title: "Governing Law",
-    number: "10",
-    content: [
-      "These Terms shall be governed by and construed in accordance with the laws of the Democratic Socialist Republic of Sri Lanka, without regard to its conflict of law principles.",
-      "Any dispute arising out of or in connection with these Terms or your use of the website or services shall be submitted to the competent courts located in Colombo, Sri Lanka.",
-    ],
-  },
+  // {
+  //   id: "governing-law",
+  //   title: "Governing Law",
+  //   number: "10",
+  //   content: [
+  //     "These Terms shall be governed by and construed in accordance with the laws of the Democratic Socialist Republic of Sri Lanka, without regard to its conflict of law principles.",
+  //     "Any dispute arising out of or in connection with these Terms or your use of the website or services shall be submitted to the competent courts located in Colombo, Sri Lanka.",
+  //   ],
+  // },
   {
     id: "contact",
     title: "Contact",
     number: "11",
     content: [
-      "If you have questions about these Terms & Conditions, please contact us. We are here to help clarify any aspect of our services and policies.",
+      "If you have any questions or require clarification regarding these Terms & Conditions, please contact Corex IT. We are happy to assist with any questions regarding our services, policies, or terms.",
     ],
   },
 ];
@@ -194,14 +194,32 @@ export default function TermsPage() {
                             Colombo, Sri Lanka
                             <br />
                             Email:{" "}
-                            <a href="mailto:hello@corexit.com" className="text-[#0057B8] hover:text-[#003B7A] transition-colors">
-                              hello@corexit.com
+                            <a href="mailto:info@corexitsolutions.com" className="text-[#0057B8] hover:text-[#003B7A] transition-colors">
+                              info@corexitsolutions.com
                             </a>
                             <br />
                             Website:{" "}
-                            <Link href="/" className="text-[#0057B8] hover:text-[#003B7A] transition-colors">
-                              corexit.com
+                            <Link
+                              href="https://corexitsolutions.com"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#0057B8] hover:text-[#003B7A] transition-colors"
+                            >
+                              corexitsolutions.com
                             </Link>
+
+                            <br />
+
+                            Contact:{" "}
+                            <a
+                              href="https://wa.me/94784600136"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#0057B8] hover:text-[#003B7A] transition-colors"
+                            >
+                              078 460 0136
+                            </a>
+
                           </p>
                         </div>
                       )}

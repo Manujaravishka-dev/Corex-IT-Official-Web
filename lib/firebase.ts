@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
+import { getFirestore, type Firestore } from "firebase/firestore";
+
+=======
 // Central Firebase module for existing project CorexIT (corexit-652f5) — Web App: corexit
 // Do NOT copy this config into multiple components. Import from here only.
 // Uses Firebase Modular SDK, initializes once via getApps()/getApp() to prevent
@@ -23,6 +28,7 @@ import type { Analytics } from "firebase/analytics";
 // Web App config for corexit-652f5 / corexit — MUST come from .env.local (never hardcode real secrets here)
 // Required vars: NEXT_PUBLIC_FIREBASE_API_KEY, AUTH_DOMAIN, DATABASE_URL, PROJECT_ID, STORAGE_BUCKET, MESSAGING_SENDER_ID, APP_ID, MEASUREMENT_ID
 // See .env.example for template. Real values in .env.local (gitignored).
+>>>>>>> 2c025544e1f15a8d71a440e0c31624deb1a31c5f
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -34,6 +40,37 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
+<<<<<<< HEAD
+let app: FirebaseApp;
+let db: Firestore;
+
+function initializeFirebase() {
+  if (getApps().length === 0) {
+    app = initializeApp(firebaseConfig);
+  } else {
+    app = getApps()[0];
+  }
+  db = getFirestore(app);
+  return { app, db };
+}
+
+export function getFirebaseApp() {
+  if (!app) {
+    initializeFirebase();
+  }
+  return app;
+}
+
+export function getFirestoreDb() {
+  if (!db) {
+    initializeFirebase();
+  }
+  return db;
+}
+
+export { initializeFirebase };
+export default firebaseConfig;
+=======
 if (firebaseConfig.projectId && firebaseConfig.projectId !== "corexit-652f5") {
   console.warn(
     `[firebase] Expected projectId "corexit-652f5" but got "${firebaseConfig.projectId}". Use the existing CorexIT project.`
@@ -165,3 +202,4 @@ export const analytics: Analytics | null = analyticsInstance;
 // Re-export app as default and named for flexibility
 export { app };
 export default app;
+>>>>>>> 2c025544e1f15a8d71a440e0c31624deb1a31c5f

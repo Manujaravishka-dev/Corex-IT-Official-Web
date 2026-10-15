@@ -1,26 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { initialReviews, validateReviewInput, type Review } from "@/lib/reviews";
-
-// In-memory store that survives HMR in dev via globalThis
-declare global {
-  var __corexReviews: Review[] | undefined;
-}
-
-function getStore(): Review[] {
-  if (!globalThis.__corexReviews) {
-    // Clone to avoid mutating the exported constant
-    globalThis.__corexReviews = [...initialReviews];
-  }
-  return globalThis.__corexReviews;
-}
+import { validateReviewInput, type ReviewInput } from "@/lib/reviews";
+import { addReview, getReviews } from "@/lib/firestore";
 
 export async function GET() {
-  const store = getStore();
-  // Sort newest first
-  const sorted = [...store].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-  return NextResponse.json({ reviews: sorted }, { status: 200 });
+  try {
+    const { reviews } = await getReviews({ limit: 50 });
+    return NextResponse.json({ reviews }, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    return NextResponse.json({ error: "Failed to fetch reviews" }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -36,19 +25,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ errors }, { status: 400 });
   }
 
-  const newReview: Review = {
-    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    name: value.name,
-    email: value.email,
-    company: value.company,
-    rating: value.rating,
-    comment: value.comment,
-    imageUrl: value.imageUrl,
-    createdAt: new Date().toISOString(),
-  };
-
-  const store = getStore();
-  store.unshift(newReview);
-
-  return NextResponse.json({ review: newReview, reviews: store }, { status: 201 });
+  try {
+    const newReview = await addReview(value as ReviewInput);
+    return NextResponse.json({ review: newReview }, { status: 201 });
+  } catch (error) {
+    console.error("Error adding review:", error);
+    return NextResponse.json({ error: "Failed to submit review" }, { status: 500 });
+  }
 }

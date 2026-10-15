@@ -84,6 +84,26 @@ export function ContactSection() {
     setIsSubmitting(true);
     setSubmitError(null);
     try {
+<<<<<<< HEAD
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.errors) {
+          setErrors(data.errors);
+        } else {
+          setSubmitError(data.error || "Something went wrong. Please try again.");
+        }
+        return;
+      }
+      setSubmitted(true);
+      setFormData({ name: "", email: "", subject: "", message: "" });
+    } catch {
+      setSubmitError("Network error. Please try again.");
+=======
       await addDoc(collection(db, COLLECTIONS.contactMessages), {
         fullName: formData.fullName.trim(),
         email: formData.email.trim(),
@@ -101,6 +121,7 @@ export function ContactSection() {
       const msg = err instanceof Error ? err.message : "Failed to send message. Please try again.";
       // Common cause: firestore.rules must allow create on contact_messages for unauthenticated users
       setSubmitError(msg);
+>>>>>>> 2c025544e1f15a8d71a440e0c31624deb1a31c5f
     } finally {
       setIsSubmitting(false);
     }
@@ -203,6 +224,58 @@ export function ContactSection() {
                 </div>
               </div>
             ) : (
+<<<<<<< HEAD
+              <>
+                {submitError && (
+                  <div className="mb-5 p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-[13px]">
+                    {submitError}
+                  </div>
+                )}
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="grid sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-[12px] text-slate-500 mb-2 tracking-[0.05em]">Name</label>
+                      <input
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) => handleChange("name", e.target.value)}
+                        className={inputClass}
+                        placeholder="Your name"
+                      />
+                      {errors.name && <p className="text-red-500 text-[11px] mt-1.5">{errors.name}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-[12px] text-slate-500 mb-2 tracking-[0.05em]">Email</label>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => handleChange("email", e.target.value)}
+                        className={inputClass}
+                        placeholder="you@company.com"
+                      />
+                      {errors.email && <p className="text-red-500 text-[11px] mt-1.5">{errors.email}</p>}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[12px] text-slate-500 mb-2 tracking-[0.05em]">Subject</label>
+                    <input
+                      type="text"
+                      value={formData.subject}
+                      onChange={(e) => handleChange("subject", e.target.value)}
+                      className={inputClass}
+                      placeholder="Project inquiry"
+                    />
+                    {errors.subject && <p className="text-red-500 text-[11px] mt-1.5">{errors.subject}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-[12px] text-slate-500 mb-2 tracking-[0.05em]">Message</label>
+                    <textarea
+                      value={formData.message}
+                      onChange={(e) => handleChange("message", e.target.value)}
+                      rows={5}
+                      className={`${inputClass} resize-none`}
+                      placeholder="Tell us about your project..."
+=======
               <form onSubmit={handleSubmit} className="space-y-5" noValidate>
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div>
@@ -224,9 +297,21 @@ export function ContactSection() {
                       onChange={(e) => handleChange("email", e.target.value)}
                       className={inputClass}
                       placeholder="you@company.com"
+>>>>>>> 2c025544e1f15a8d71a440e0c31624deb1a31c5f
                     />
-                    {errors.email && <p className="text-red-500 text-[11px] mt-1.5">{errors.email}</p>}
+                    {errors.message && <p className="text-red-500 text-[11px] mt-1.5">{errors.message}</p>}
                   </div>
+<<<<<<< HEAD
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto px-8 py-3.5 text-[13px] font-semibold tracking-[0.02em] bg-[#0057B8] text-white rounded-none transition-all duration-300 hover:bg-[#003B7A] disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? "Sending..." : "Send Message"}
+                  </button>
+                </form>
+              </>
+=======
                 </div>
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div>
@@ -286,6 +371,7 @@ export function ContactSection() {
                 </button>
                 <p className="text-[11px] text-slate-400">Stored securely in Firestore · contact_messages · Admin will review shortly.</p>
               </form>
+>>>>>>> 2c025544e1f15a8d71a440e0c31624deb1a31c5f
             )}
           </motion.div>
         </div>

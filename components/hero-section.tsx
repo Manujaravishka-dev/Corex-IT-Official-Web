@@ -3,8 +3,31 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+<<<<<<< HEAD
+import { useEffect, useState } from "react";
+import { MergedInstanceAnimation } from "@/components/3d/MergedInstanceAnimation";
+
+const HERO_IMAGES = [
+  {
+    src: "/images/corex-hero.jpg",
+    alt: "Enterprise technology network — Corex IT",
+    pos: "object-[center_35%]",
+  },
+  {
+    src: "/images/corex-hero-2.jpg",
+    alt: "Modern software engineering workspace — Corex IT",
+    pos: "object-[center_40%]",
+  },
+  {
+    src: "/images/corex-hero-3.jpg",
+    alt: "Digital transformation enterprise environment — Corex IT",
+    pos: "object-[center_45%]",
+  },
+];
+=======
 import { useEffect, useState, useMemo } from "react";
 import { useWebsiteImages, toSlideImages } from "@/hooks/use-website-images";
+>>>>>>> 2c025544e1f15a8d71a440e0c31624deb1a31c5f
 
 export function HeroSection() {
   const { images: dbImages, loading } = useWebsiteImages("hero");
@@ -61,6 +84,15 @@ export function HeroSection() {
         <div className="absolute inset-0 opacity-[0.045] bg-[linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] bg-[size:72px_72px] pointer-events-none" />
       </div>
 
+<<<<<<< HEAD
+      {/* 3D Animation Layer — behind content, above images */}
+      <div className="absolute inset-0 z-5 pointer-events-none">
+        <MergedInstanceAnimation />
+      </div>
+
+      {/* content — ~100vh, image covers 100% width/height, text above */}
+=======
+>>>>>>> 2c025544e1f15a8d71a440e0c31624deb1a31c5f
       <div className="relative z-10 max-w-[1440px] mx-auto px-6 lg:px-10 flex items-center min-h-[86vh] md:min-h-[88vh] lg:min-h-[calc(100vh-80px)] py-12 md:py-16 lg:py-10">
         <div className="w-full max-w-[640px] xl:max-w-[660px]">
           <motion.div

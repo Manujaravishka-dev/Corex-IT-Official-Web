@@ -1,38 +1,38 @@
 "use client";
 
 import Image from "next/image";
-import { PenTool, Code2, Smartphone, ClipboardCheck, Cloud, Briefcase } from "lucide-react";
+import { Bot, LayoutGrid, Smartphone, Settings, ClipboardCheck, Workflow } from "lucide-react";
 
 const services = [
   {
-    icon: PenTool,
-    title: "Prototyping",
-    desc: "Creating User Experiences,\nDesigns, Wireframes and User\nflows.",
+    icon: Bot,
+    title: "Agentic AI Solutions",
+    desc: "Intelligent AI-powered solutions designed to automate workflows, support decision-making, improve productivity, and streamline business operations.",
   },
   {
-    icon: Code2,
-    title: "Full Stack Development",
-    desc: "HTML / CSS, NodeJS / ExpressJS,\nDMS, HTTP and REST, GIT, PHP,\nPython, JAVA, RoR",
+    icon: LayoutGrid,
+    title: "SaaS / Web Applications",
+    desc: "Scalable and user-friendly web applications designed around business requirements, customer needs, and long-term growth.",
   },
   {
     icon: Smartphone,
     title: "Mobile Applications",
-    desc: "Native (iOS, Android) Cross\nPlatform Development Flutter,\nReact Native and Xamarin\nresources",
+    desc: "Modern, responsive, and user-friendly mobile applications designed to deliver seamless experiences across devices.",
+  },
+  {
+    icon: Settings,
+    title: "Custom Software",
+    desc: "Tailor-made software solutions designed to solve unique business challenges, improve efficiency, and simplify daily operations.",
   },
   {
     icon: ClipboardCheck,
     title: "QA Services",
-    desc: "QA Automation and testing, cross\ndevice testing, regression testing",
+    desc: "Comprehensive quality assurance, functional testing, performance testing, and reliability checks to deliver stable digital products.",
   },
   {
-    icon: Cloud,
-    title: "Amazon Web Services",
-    desc: "Cloud migration, hosting, server\nmanagement, optimisation etc",
-  },
-  {
-    icon: Briefcase,
-    title: "CTO and Project Management",
-    desc: "Architecture, Documentation,\nScheduling and Reports",
+    icon: Workflow,
+    title: "DevOps",
+    desc: "Reliable deployment, infrastructure, monitoring, automation, and operational practices for stable and scalable digital products.",
   },
 ];
 
