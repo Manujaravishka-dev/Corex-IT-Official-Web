@@ -64,6 +64,12 @@ service cloud.firestore {
       allow create, update, delete: if request.auth != null;
     }
 
+    // Projects: visitors can read published case studies; signed-in admins manage records.
+    match /projects/{docId} {
+      allow get, list: if isAdmin() || resource.data.isPublished == true;
+      allow create, update, delete: if isAdmin();
+    }
+
     // Blogs: public can read all (public-facing articles); only admin can create/update/delete
     match /blogs/{docId} {
       allow get, list: if true;
