@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 export function HeroSection() {
   return (
     <section
-      className="relative w-full overflow-hidden bg-[#071A33]"
+      className="relative flex min-h-screen min-h-[100svh] w-full overflow-hidden bg-[#071A33]"
     >
       {/* Image-free geometric gradient hero; no dots, grid or 3D artwork. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden bg-gradient-to-r from-[#092C68] via-[#07569D] to-[#08A6E8]">
@@ -15,7 +15,7 @@ export function HeroSection() {
         <div className="absolute -bottom-[75%] left-[20%] h-[120%] w-[80%] -rotate-[30deg] bg-[#003E86]/20" />
         <div className="absolute right-[-15%] top-[-30%] h-[95%] w-[35%] rotate-[35deg] border border-white/10" />
       </div>
-      <div className="relative z-10 max-w-[1440px] mx-auto px-6 lg:px-10 flex items-center min-h-[100svh] md:min-h-[100svh] lg:min-h-[100svh] py-12 md:py-16 lg:py-10">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-1 items-center px-6 pt-28 pb-12 lg:px-10 lg:pt-32 lg:pb-16">
         <div className="w-full max-w-[640px] xl:max-w-[660px]">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -44,7 +44,7 @@ export function HeroSection() {
             <br />
             <span className="font-light tracking-[-0.05em] text-white">that moves</span>
             <br />
-            <span className="bg-gradient-to-r from-[#8AB6FF] via-[#0057B8] to-[#0057B8] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#FFFFFF] via-[#D7E9FF] to-[#A9D8FF] bg-clip-text text-transparent">
               businesses forward.
             </span>
           </motion.h1>
