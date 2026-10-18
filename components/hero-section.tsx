@@ -16,32 +16,6 @@ export function HeroSection() {
         <div className="absolute right-[-15%] top-[-30%] h-[95%] w-[35%] rotate-[35deg] border border-white/10" />
       </div>
       <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-1 items-center px-6 pt-28 pb-12 lg:px-10 lg:pt-32 lg:pb-16">
-        {/* Decorative, CSS-only glowing technology orb: no image, canvas or external assets. */}
-        <div aria-hidden="true" className="pointer-events-none absolute right-[2%] top-1/2 hidden aspect-square w-[43%] max-w-[570px] -translate-y-1/2 lg:block">
-          <motion.div
-            className="relative h-full w-full"
-            animate={{ y: [0, -14, 0], rotate: [0, 3, 0] }}
-            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <div className="absolute inset-[4%] rounded-full bg-cyan-300/20 blur-[75px]" />
-            <div className="absolute inset-[11%] rounded-full border border-cyan-100/20 shadow-[0_0_70px_12px_rgba(56,189,248,0.2),inset_0_0_70px_rgba(56,189,248,0.2)]" />
-            <div className="absolute inset-[16%] rounded-full bg-[radial-gradient(circle_at_32%_28%,rgba(224,248,255,0.95)_0%,rgba(103,232,249,0.85)_9%,rgba(14,165,233,0.68)_26%,rgba(3,75,148,0.94)_57%,rgba(3,24,68,0.98)_79%)] shadow-[inset_-26px_-24px_50px_rgba(1,13,48,0.8),0_0_45px_rgba(125,211,252,0.45)]" />
-            <motion.div
-              className="absolute inset-[7%] rounded-full border border-cyan-100/45"
-              style={{ transform: "rotate(-28deg) scaleY(0.43)" }}
-              animate={{ rotate: [-28, 332] }}
-              transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
-            />
-            <motion.div
-              className="absolute inset-[5%] rounded-full border-2 border-sky-200/35"
-              style={{ transform: "rotate(55deg) scaleY(0.65)" }}
-              animate={{ rotate: [55, -305] }}
-              transition={{ duration: 34, repeat: Infinity, ease: "linear" }}
-            />
-            <div className="absolute inset-[22%] rounded-full border border-white/15 shadow-[inset_0_0_24px_rgba(186,230,253,0.25)]" />
-            <div className="absolute left-[26%] top-[22%] h-[11%] w-[11%] rounded-full bg-white/45 blur-2xl" />
-          </motion.div>
-        </div>
         <div className="relative z-10 w-full max-w-[640px] xl:max-w-[660px]">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
