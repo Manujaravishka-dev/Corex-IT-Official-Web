@@ -1443,7 +1443,6 @@ export default function AdminDashboard() {
             <span className="text-[18px] font-extrabold tracking-tight text-[#071A33]">COREX <span className="text-[#0057B8]">IT</span> <span className="ml-2 text-[11px] font-semibold tracking-[0.12em] uppercase text-slate-400">Admin · corexit-652f5</span></span>
             <span className="hidden md:inline text-[12px] text-slate-500">{userEmail}</span>
           </div>
-          <a href="/corexit-admin/projects" className="px-4 py-2 rounded-lg bg-[#0057B8] text-white text-[13px] font-semibold">Projects Management</a>
           <button onClick={handleLogout} className="px-4 py-2 rounded-lg border border-slate-200 bg-white text-[13px] font-medium text-slate-700 hover:bg-slate-50">Logout</button>
         </div>
       </div>
@@ -1458,13 +1457,14 @@ export default function AdminDashboard() {
               { id: "messages", label: "Contact Messages" },
               { id: "images", label: "Website Images" },
               { id: "blogs", label: "Blog Management" },
+              { id: "projects", label: "Projects Management" },
               { id: "company-highlights", label: "Company Highlights" },
               { id: "client-brands", label: "Client Brands" },
               { id: "settings", label: "Settings" },
             ].map((item) => (
               <button
                 key={item.id}
-                onClick={() => handleTabClick(item.id as Tab)}
+                onClick={() => item.id === "projects" ? router.push("/corexit-admin/projects") : handleTabClick(item.id as Tab)}
                 className={`px-4 py-2.5 rounded-lg text-[13.5px] font-medium text-left whitespace-nowrap transition-colors ${tab === item.id ? "bg-[#071A33] text-white" : "text-slate-600 hover:bg-slate-50"}`}
               >
                 {item.label}
