@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useInView } from "@/hooks/use-in-view";
 import { Mail, MapPin, ArrowUpRight } from "lucide-react";
 import { doc, getDoc } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { COLLECTIONS, SETTINGS_DOC_ID, type CompanySettings } from "@/lib/firestore-types";
 import { defaultCompanySettings } from "@/lib/site-settings";
