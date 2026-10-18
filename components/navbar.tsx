@@ -24,11 +24,12 @@ const rightLinks = [
 ];
 
 const mobileLinks = [...leftLinks, ...rightLinks];
-const hiddenNavLinks = new Set(["Projects"]);
+
 
 export function Navbar() {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith("/corexit-admin");
+  const navigationLinks = mobileLinks;
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [companyEmail, setCompanyEmail] = useState(defaultCompanySettings.email);
@@ -74,40 +75,41 @@ export function Navbar() {
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
-            ? "h-[72px] bg-white/85 backdrop-blur-md border-b border-slate-200/80 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]"
-            : "h-[88px] bg-transparent border-b border-slate-100/60"
+            ? "h-[76px] bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]"
+            : "h-[90px] bg-white border-b border-slate-100"
         }`}
       >
-        <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between px-6 lg:px-12 relative">
+        <div className="max-w-[1440px] mx-auto h-full grid grid-cols-[1fr_auto] lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 xl:gap-6 px-5 md:px-8 xl:px-12 relative">
           
           {/* Left Side: Brand Name */}
-          <Link href="/" className="flex items-center shrink-0 group">
+          <Link href="/" className="flex items-center shrink-0 group justify-self-start">
             <span className="text-[20px] lg:text-[22px] font-extrabold tracking-tight text-[#071A33] transition-transform duration-300 group-hover:scale-105">
               COREX <span className="text-[#0057B8]">IT</span>
             </span>
           </Link>
 
-          {/* Desktop Center/Grouped Section: Left Links + Right Links combined near the middle */}
-          <div className="hidden lg:flex items-center gap-1 mx-auto">
-            {[...leftLinks, ...rightLinks]
-              .filter((l) => !hiddenNavLinks.has(l.label))
-              .map((l) => (
+          {/* Center navigation — compact Koyeb-inspired grouping, COREX branding */}
+          <div className="hidden lg:flex items-center justify-center gap-0.5 xl:gap-1 h-[54px] px-3 xl:px-4 rounded-[10px] bg-[#EDF2F8] justify-self-center">
+            {navigationLinks.map((link) => {
+              const active = pathname === link.href || (link.href !== "/" && pathname?.startsWith(link.href + "/"));
+              return (
                 <Link
-                  key={l.label}
-                  href={l.href}
-                  className="relative px-3.5 xl:px-4 py-2 text-[13.5px] font-medium tracking-[-0.01em] text-slate-600 hover:text-[#0057B8] transition-colors duration-200 group whitespace-nowrap"
+                  key={link.label}
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex items-center justify-center h-[38px] px-2.5 xl:px-3.5 rounded-[7px] text-[13px] xl:text-[14px] font-medium whitespace-nowrap transition-colors duration-200 ${active ? "text-[#0056B8] bg-[#DCEAFB]" : "text-[#263B56] hover:text-[#0056B8] hover:bg-white/70"}`}
                 >
-                  {l.label}
-                  <span className="absolute left-3.5 xl:left-4 right-3.5 xl:right-4 bottom-1 h-px bg-[#0057B8] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center" />
+                  {link.label}
                 </Link>
-              ))}
+              );
+            })}
           </div>
 
           {/* Right Side: CTA Button + Mobile Toggle */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 justify-self-end">
             <Link
               href="/contact"
-              className="hidden md:inline-flex items-center gap-2 px-6 py-2.5 rounded-none bg-gradient-to-r from-[#0057B8] to-[#00418c] text-white text-[13.5px] font-semibold tracking-wide hover:from-[#00418c] hover:to-[#002f66] transition-all duration-300 shadow-[0_4px_14px_0_rgba(0,87,184,0.39)] hover:shadow-[0_6px_20px_rgba(0,87,184,0.45)] hover:-translate-y-0.5 whitespace-nowrap"
+              className="hidden md:inline-flex h-[54px] items-center gap-2 px-5 xl:px-7 rounded-[8px] bg-[#0056B8] text-white text-[14px] font-semibold hover:bg-[#00458F] transition-colors duration-200 shadow-[0_4px_0_#003B7A] whitespace-nowrap"
             >
               Let&apos;s Talk
               <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
@@ -115,7 +117,7 @@ export function Navbar() {
 
             {/* Mobile Menu Button */}
             <button
-              className="lg:hidden w-11 h-11 rounded-none border border-slate-200 bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-all shadow-sm shrink-0 active:scale-95"
+              className="lg:hidden w-11 h-11 rounded-[8px] border border-slate-200 bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-all shadow-sm shrink-0 active:scale-95"
               onClick={() => setIsMobileOpen(!isMobileOpen)}
               aria-label={isMobileOpen ? "Close menu" : "Open menu"}
             >
@@ -134,12 +136,12 @@ export function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="fixed inset-0 z-40 bg-white/95 backdrop-blur-xl flex flex-col pt-[88px]"
+            className="fixed inset-0 z-40 bg-white/95 backdrop-blur-xl flex flex-col pt-[90px]"
           >
             <nav className="flex-1 flex flex-col px-6 py-8 overflow-y-auto">
               <div className="flex flex-col gap-2">
                 {mobileLinks
-                  .filter((l) => !hiddenNavLinks.has(l.label))
+                  
                   .map((l, i) => (
                     <motion.div
                       key={l.label}
@@ -190,7 +192,7 @@ export function Navbar() {
       </AnimatePresence>
 
       {/* Spacer to prevent content hiding under fixed nav */}
-      <div className="h-[88px]" aria-hidden />
+      <div className="h-[90px]" aria-hidden />
     </>
   );
 }
