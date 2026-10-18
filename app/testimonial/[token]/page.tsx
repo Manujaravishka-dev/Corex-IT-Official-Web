@@ -11,7 +11,10 @@ export default function CustomerTestimonialPage({ params }: { params: Promise<{ 
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Form fields - MUST NOT include image/file upload
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+
+  // Customer feedback fields
   const [form, setForm] = useState({
     name: "",
     company: "",
@@ -89,6 +92,19 @@ export default function CustomerTestimonialPage({ params }: { params: Promise<{ 
     if (!validate()) return;
     setSubmitting(true);
     try {
+      let imageUrl = "";
+      if (photo) {
+        const uploadData = new FormData();
+        uploadData.append("token", token);
+        uploadData.append("file", photo);
+        const uploadResponse = await fetch("/api/testimonials/upload", { method: "POST", body: uploadData });
+        const uploadResult = await uploadResponse.json().catch(() => ({}));
+        if (!uploadResponse.ok) {
+          setError(uploadResult.error || "Image upload failed. Please try again.");
+          return;
+        }
+        imageUrl = uploadResult.imageUrl;
+      }
       const res = await fetch("/api/testimonials/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -99,6 +115,7 @@ export default function CustomerTestimonialPage({ params }: { params: Promise<{ 
           designation: form.designation.trim(),
           comment: form.comment.trim(),
           rating: form.rating, // 0 means optional -> server defaults to 5
+          imageUrl,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -268,7 +285,29 @@ export default function CustomerTestimonialPage({ params }: { params: Promise<{ 
               <p className="text-[11px] text-slate-400 mt-1.5">Tap a star to select. Rating is optional.</p>
             </div>
 
-            {/* NOTE: No image/file upload field per requirement. Customer MUST NOT have image upload. */}
+            <div>
+              <label htmlFor="testimonial-photo" className="block text-[12px] font-medium text-slate-700 mb-1.5">Your photo <span className="text-slate-400 font-normal">(optional)</span></label>
+              <input
+                id="testimonial-photo"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(event) => {
+                  const file = event.target.files?.[0] ?? null;
+                  setError(null);
+                  if (file && (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024)) {
+                    setError("Please choose a JPG, PNG or WebP image under 5MB.");
+                    setPhoto(null);
+                    setPhotoPreview(null);
+                    return;
+                  }
+                  setPhoto(file);
+                  setPhotoPreview(file ? URL.createObjectURL(file) : null);
+                }}
+                className="block w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-[12px] text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-[#0057B8]"
+              />
+              {photoPreview && <div className="mt-3 flex items-center gap-3"><img src={photoPreview} alt="Selected photo preview" className="h-16 w-16 rounded-full object-cover" /><button type="button" className="text-xs text-red-600 underline" onClick={() => { setPhoto(null); setPhotoPreview(null); const input = document.getElementById("testimonial-photo") as HTMLInputElement | null; if (input) input.value = ""; }}>Remove photo</button></div>}
+              <p className="mt-1.5 text-[11px] text-slate-400">JPG, PNG or WebP · Maximum 5MB · Uploaded securely when you submit</p>
+            </div>
 
             {error && <p className="text-[12px] text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">{error}</p>}
 
