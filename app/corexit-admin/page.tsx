@@ -1458,13 +1458,14 @@ export default function AdminDashboard() {
               { id: "images", label: "Website Images" },
               { id: "blogs", label: "Blog Management" },
               { id: "projects", label: "Projects Management" },
+              { id: "careers", label: "Career Management" },
               { id: "company-highlights", label: "Company Highlights" },
               { id: "client-brands", label: "Client Brands" },
               { id: "settings", label: "Settings" },
             ].map((item) => (
               <button
                 key={item.id}
-                onClick={() => item.id === "projects" ? router.push("/corexit-admin/projects") : handleTabClick(item.id as Tab)}
+                onClick={() => item.id === "projects" ? router.push("/corexit-admin/projects") : item.id === "careers" ? router.push("/corexit-admin/careers") : handleTabClick(item.id as Tab)}
                 className={`px-4 py-2.5 rounded-lg text-[13.5px] font-medium text-left whitespace-nowrap transition-colors ${tab === item.id ? "bg-[#071A33] text-white" : "text-slate-600 hover:bg-slate-50"}`}
               >
                 {item.label}
