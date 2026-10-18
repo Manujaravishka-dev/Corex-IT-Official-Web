@@ -172,23 +172,19 @@ export function CompanyHighlightsSection() {
       ref={ref}
       className="relative overflow-hidden bg-[#040E1F]"
     >
-      {/* Deep navy base gradient */}
-      <div className="absolute inset-0 bg-[#040E1F]" />
-      <div className="absolute inset-0 bg-gradient-to-br from-[#071A33] via-[#0A2450] to-[#040E1F]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_900px_600px_at_75%_18%,rgba(0,87,184,0.12),transparent_62%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_800px_500px_at_12%_82%,rgba(59,130,246,0.08),transparent_65%)]" />
-
-      {/* Subtle grid texture */}
-      <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] pointer-events-none" />
-
-      {/* Light blue radial accent */}
-      <div className="absolute top-0 left-0 w-full h-full rounded-2xl opacity-[0.03] blur-[60px] bg-[#3B82F6] pointer-events-none" />
+      {/* Match the homepage hero: image-free angular navy-to-cyan gradient. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden bg-gradient-to-r from-[#092C68] via-[#07569D] to-[#08A6E8]">
+        <div className="absolute -left-[12%] top-[-50%] h-[125%] w-[76%] rotate-[32deg] bg-[#092452]/25" />
+        <div className="absolute left-[25%] top-[-75%] h-[150%] w-[58%] rotate-[38deg] bg-[#2D9BD2]/20" />
+        <div className="absolute -bottom-[75%] left-[20%] h-[120%] w-[80%] -rotate-[30deg] bg-[#003E86]/20" />
+        <div className="absolute right-[-15%] top-[-30%] h-[95%] w-[35%] rotate-[35deg] border border-white/10" />
+      </div>
 
       <div className="relative max-w-[1440px] mx-auto px-6 lg:px-10 py-20 md:py-24">
         {/* Two-column layout */}
-        <div className="lg:block lg:flex gap-12 md:gap-8 items-start">
+        <div className="flex flex-col gap-12 lg:flex-row lg:gap-16 items-start">
           {/* Left side: text content */}
-          <div className="lg:w-1/2">
+          <div className="w-full lg:w-1/2">
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] backdrop-blur border border-white/10 text-[10px] font-semibold tracking-[0.12em] uppercase text-[#8AB6FF] mb-4">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
                 <path d="M5 12h14M12 5l7 7-7 7" />
@@ -200,15 +196,15 @@ export function CompanyHighlightsSection() {
               We Build Lasting Partnerships With Our Clients
             </h2>
 
-            <p className="text-[15px] leading-[1.7] text-white/60 mb-8 max-w-lg">
+            <p className="text-[15px] leading-[1.7] text-white/85 mb-8 max-w-lg">
               We create reliable digital solutions that help businesses grow, streamline operations and build stronger connections with their customers.
             </p>
           </div>
 
           {/* Right side: statistics grid */}
-          <div className="lg:w-1/2 md:w-full">
+          <div className="w-full lg:w-1/2">
             {/* Blue divider above stats */}
-            <div className="h-[1px] bg-gradient-to-r from-transparent via-blue-100/20 to-transparent my-12"></div>
+            <div className="hidden"></div>
 
             {loading ? (
               <div className="grid grid-cols-2 gap-4">
@@ -237,11 +233,11 @@ export function CompanyHighlightsSection() {
                       {display[i]}{stat.suffix}
                     </span>
 
-                    <p className="text-[12px] font-medium text-slate-400 uppercase tracking-[0.1em]">
+                    <p className="text-[12px] font-medium text-blue-100 uppercase tracking-[0.1em]">
                       {stat.label}
                     </p>
 
-                    <p className="text-[11px] text-slate-500 text-center">
+                    <p className="text-[11px] text-blue-100/80 text-center">
                       {stat.description}
                     </p>
                   </div>
