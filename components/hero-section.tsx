@@ -1,68 +1,23 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState, useMemo } from "react";
-import { useWebsiteImages, toSlideImages } from "@/hooks/use-website-images";
-import { MergedInstanceAnimation } from "@/components/3d/MergedInstanceAnimation";
+import { motion } from "framer-motion";
 
 export function HeroSection() {
-  const { images: dbImages, loading } = useWebsiteImages("hero");
-  const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
-
-  const slides = useMemo(() => toSlideImages(dbImages), [dbImages]);
-  const hasSlides = slides.length > 0;
-  const safeIndex = Math.min(index, Math.max(slides.length - 1, 0));
-
-  useEffect(() => {
-    if (paused || !hasSlides) return;
-    const id = setInterval(() => {
-      setIndex((i) => (i + 1) % slides.length);
-    }, 4500);
-    return () => clearInterval(id);
+  return () => clearInterval(id);
   }, [paused, slides.length, hasSlides]);
 
   return (
     <section
       className="relative w-full overflow-hidden bg-[#071A33]"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
     >
-      <div className="absolute inset-0">
-        {hasSlides ? (
-          <AnimatePresence mode="popLayout">
-            <motion.div
-              key={safeIndex}
-              initial={{ opacity: 0, scale: 1.04 }}
-              animate={{ opacity: 1, scale: 1.02 }}
-              exit={{ opacity: 0, scale: 1.02 }}
-              transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute inset-0"
-            >
-              <Image
-                src={slides[safeIndex].src}
-                alt={slides[safeIndex].alt}
-                fill
-                priority={safeIndex === 0}
-                sizes="100vw"
-                className={`object-cover ${slides[safeIndex].pos}`}
-              />
-            </motion.div>
-          </AnimatePresence>
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-[#071A33] via-[#0A2450] to-[#040E1F]" />
-        )}
-
-        <div className="absolute inset-0 bg-gradient-to-r from-[#071A33]/85 via-[#071A33]/68 to-[#071A33]/18" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#071A33]/55 via-transparent to-[#071A33]/25" />
-        <div className="absolute -top-28 -right-24 w-[760px] h-[760px] rounded-full bg-[#0057B8]/18 blur-[90px] pointer-events-none" />
-        <div className="absolute top-1/2 left-[42%] -translate-y-1/2 w-[900px] h-[520px] rounded-full bg-[#0057B8]/10 blur-[70px] pointer-events-none hidden lg:block" />
-        <div className="absolute inset-0 opacity-[0.045] bg-[linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] bg-[size:72px_72px] pointer-events-none" />
+      {/* Image-free geometric gradient hero; no dots, grid or 3D artwork. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden bg-gradient-to-r from-[#092C68] via-[#07569D] to-[#08A6E8]">
+        <div className="absolute -left-[12%] top-[-50%] h-[125%] w-[76%] rotate-[32deg] bg-[#092452]/25" />
+        <div className="absolute left-[25%] top-[-75%] h-[150%] w-[58%] rotate-[38deg] bg-[#2D9BD2]/20" />
+        <div className="absolute -bottom-[75%] left-[20%] h-[120%] w-[80%] -rotate-[30deg] bg-[#003E86]/20" />
+        <div className="absolute right-[-15%] top-[-30%] h-[95%] w-[35%] rotate-[35deg] border border-white/10" />
       </div>
-
-      <div className="absolute inset-0 z-5 pointer-events-none"><MergedInstanceAnimation /></div>
       <div className="relative z-10 max-w-[1440px] mx-auto px-6 lg:px-10 flex items-center min-h-[86vh] md:min-h-[88vh] lg:min-h-[calc(100vh-80px)] py-12 md:py-16 lg:py-10">
         <div className="w-full max-w-[640px] xl:max-w-[660px]">
           <motion.div
@@ -148,19 +103,6 @@ export function HeroSection() {
             </span>
           </motion.div>
         </div>
-      </div>
-
-      <div className="absolute z-20 bottom-[18px] md:bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-10 flex items-center gap-2.5">
-        {slides.map((_, i) => (
-          <button
-            key={i}
-            aria-label={`Go to slide ${i + 1}`}
-            onClick={() => setIndex(i)}
-            className={`transition-all duration-300 rounded-none ${
-              i === safeIndex ? "w-8 h-1.5 bg-white" : "w-6 h-1.5 bg-white/40 hover:bg-white/70"
-            }`}
-          />
-        ))}
       </div>
 
       <div className="absolute bottom-0 inset-x-0 z-20 pointer-events-none">
