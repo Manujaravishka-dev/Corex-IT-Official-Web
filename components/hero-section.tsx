@@ -4,9 +4,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 export function HeroSection() {
-  return () => clearInterval(id);
-  }, [paused, slides.length, hasSlides]);
-
   return (
     <section
       className="relative w-full overflow-hidden bg-[#071A33]"
