@@ -15,7 +15,7 @@ export function HeroSection() {
         <div className="absolute -bottom-[75%] left-[20%] h-[120%] w-[80%] -rotate-[30deg] bg-[#003E86]/20" />
         <div className="absolute right-[-15%] top-[-30%] h-[95%] w-[35%] rotate-[35deg] border border-white/10" />
       </div>
-      <div className="relative z-10 max-w-[1440px] mx-auto px-6 lg:px-10 flex items-center min-h-[86vh] md:min-h-[88vh] lg:min-h-[calc(100vh-80px)] py-12 md:py-16 lg:py-10">
+      <div className="relative z-10 max-w-[1440px] mx-auto px-6 lg:px-10 flex items-center min-h-[100svh] md:min-h-[100svh] lg:min-h-[100svh] py-12 md:py-16 lg:py-10">
         <div className="w-full max-w-[640px] xl:max-w-[660px]">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
