@@ -1,19 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 export function HeroSection() {
+  const reduceMotion = useReducedMotion();
   return (
     <section
       className="relative flex min-h-screen min-h-[100svh] w-full overflow-hidden bg-[#071A33]"
     >
       {/* Image-free geometric gradient hero; no dots, grid or external artwork. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden bg-gradient-to-r from-[#092C68] via-[#07569D] to-[#08A6E8]">
-        <div className="absolute -left-[12%] top-[-50%] h-[125%] w-[76%] rotate-[32deg] bg-[#092452]/25" />
-        <div className="absolute left-[25%] top-[-75%] h-[150%] w-[58%] rotate-[38deg] bg-[#2D9BD2]/20" />
-        <div className="absolute -bottom-[75%] left-[20%] h-[120%] w-[80%] -rotate-[30deg] bg-[#003E86]/20" />
-        <div className="absolute right-[-15%] top-[-30%] h-[95%] w-[35%] rotate-[35deg] border border-white/10" />
+        <motion.div className="absolute -left-[12%] top-[-50%] h-[125%] w-[76%] rotate-[32deg] bg-[#092452]/25" animate={reduceMotion ? undefined : {"x":[0,24,-12,0],"y":[0,-18,14,0],"rotate":[32,35,30,32]}} transition={{ duration: 24, repeat: Infinity, ease: "easeInOut" }} />
+        <motion.div className="absolute left-[25%] top-[-75%] h-[150%] w-[58%] rotate-[38deg] bg-[#2D9BD2]/20" animate={reduceMotion ? undefined : {"x":[0,-30,15,0],"y":[0,20,-12,0],"rotate":[38,34,40,38]}} transition={{ duration: 29, repeat: Infinity, ease: "easeInOut" }} />
+        <motion.div className="absolute -bottom-[75%] left-[20%] h-[120%] w-[80%] -rotate-[30deg] bg-[#003E86]/20" animate={reduceMotion ? undefined : {"x":[0,20,-18,0],"y":[0,-15,10,0],"rotate":[-30,-27,-33,-30]}} transition={{ duration: 32, repeat: Infinity, ease: "easeInOut" }} />
+        <motion.div className="absolute right-[-15%] top-[-30%] h-[95%] w-[35%] rotate-[35deg] border border-white/10" animate={reduceMotion ? undefined : {"x":[0,-14,12,0],"y":[0,14,-12,0],"rotate":[35,38,33,35]}} transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }} />
       </div>
       <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-1 items-center px-6 pt-28 pb-12 lg:px-10 lg:pt-32 lg:pb-16">
         <div className="relative z-10 w-full max-w-[640px] xl:max-w-[660px]">
