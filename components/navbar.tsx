@@ -29,6 +29,7 @@ const mobileLinks = [...leftLinks, ...rightLinks];
 export function Navbar() {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith("/corexit-admin");
+  const overlayHero = pathname === "/" || pathname === "/career";
   const navigationLinks = mobileLinks;
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -76,20 +77,20 @@ export function Navbar() {
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
             ? "h-[76px] bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]"
-            : "h-[90px] bg-white border-b border-slate-100"
+            : overlayHero ? "h-[90px] bg-transparent" : "h-[90px] bg-white border-b border-slate-100"
         }`}
       >
         <div className="max-w-[1280px] mx-auto h-full flex items-center gap-3 px-4 md:px-6 lg:px-4 xl:px-5 relative">
           
           {/* Left Side: Brand Name */}
           <Link href="/" className="flex items-center shrink-0 group">
-            <span className="text-[18px] lg:text-[19px] font-extrabold tracking-tight text-[#071A33] transition-transform duration-300 group-hover:scale-105">
+            <span className={`text-[18px] lg:text-[19px] font-extrabold tracking-tight transition-transform duration-300 group-hover:scale-105 ${overlayHero && !isScrolled ? "text-white" : "text-[#071A33]"}`}>
               COREX <span className="text-[#0057B8]">IT</span>
             </span>
           </Link>
 
           {/* Center navigation — compact Koyeb-inspired grouping, COREX branding */}
-          <div className="hidden lg:flex flex-1 min-w-0 items-center justify-center gap-0.5 h-[54px] px-3 xl:px-4 rounded-[10px] bg-[#EDF2F8]">
+          <div className={`hidden lg:flex flex-1 min-w-0 items-center justify-center gap-0.5 h-[54px] px-3 xl:px-4 rounded-[10px] ${overlayHero && !isScrolled ? "bg-white/15 backdrop-blur-md border border-white/20" : "bg-[#EDF2F8]"}`}>
             {navigationLinks.map((link) => {
               const active = pathname === link.href || (link.href !== "/" && pathname?.startsWith(link.href + "/"));
               return (
@@ -97,7 +98,7 @@ export function Navbar() {
                   key={link.label}
                   href={link.href}
                   aria-current={active ? "page" : undefined}
-                  className={`flex items-center justify-center h-[38px] px-2 xl:px-3 rounded-[7px] text-[13px] xl:text-[14px] font-medium whitespace-nowrap transition-colors duration-200 ${active ? "text-[#0056B8] bg-[#DCEAFB]" : "text-[#263B56] hover:text-[#0056B8] hover:bg-white/70"}`}
+                  className={`flex items-center justify-center h-[38px] px-2 xl:px-3 rounded-[7px] text-[13px] xl:text-[14px] font-medium whitespace-nowrap transition-colors duration-200 ${active ? "text-[#0056B8] bg-[#DCEAFB]" : overlayHero && !isScrolled ? "text-white hover:bg-white/20" : "text-[#263B56] hover:text-[#0056B8] hover:bg-white/70"}`}
                 >
                   {link.label}
                 </Link>
@@ -192,7 +193,7 @@ export function Navbar() {
       </AnimatePresence>
 
       {/* Spacer to prevent content hiding under fixed nav */}
-      <div className="h-[90px]" aria-hidden />
+      <div className={overlayHero ? "h-0" : "h-[90px]"} aria-hidden />
     </>
   );
 }
