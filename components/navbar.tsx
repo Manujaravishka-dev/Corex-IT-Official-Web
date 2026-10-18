@@ -14,7 +14,7 @@ import { defaultCompanySettings } from "@/lib/site-settings";
 const leftLinks = [
   { label: "About", href: "/about" },
   { label: "Services", href: "/services" },
-  { label: "Career", href: "/technologies" },
+  { label: "Career", href: "/career" },
 ];
 
 const rightLinks = [
