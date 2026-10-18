@@ -1,12 +1,123 @@
 "use client";
+
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ProjectsHero } from "@/components/projects-hero";
-type Project = { id: string; slug: string; title: string; category: string; type?: string; industry?: string; year?: string; description: string; image?: string; technologies?: string[] };
+
+type Project = {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  type?: string;
+  industry?: string;
+  year?: string;
+  description: string;
+  image?: string;
+  logo?: string;
+  technologies?: string[];
+};
+
 export default function ProjectsClient() {
- const [projects,setProjects]=useState<Project[]>([]),[active,setActive]=useState("All Projects"),[loading,setLoading]=useState(true),[error,setError]=useState("");
- useEffect(()=>{let mounted=true;fetch("/api/projects").then(async r=>{const j=await r.json();if(!r.ok)throw Error(j.error||"Failed to load");if(mounted)setProjects(j.projects||[])}).catch(e=>{if(mounted)setError(e.message)}).finally(()=>{if(mounted)setLoading(false)});return()=>{mounted=false}},[]);
- const categories=useMemo(()=>["All Projects",...Array.from(new Set(projects.map(p=>p.category).filter(Boolean)))],[projects]);
- const filtered=active==="All Projects"?projects:projects.filter(p=>p.category===active);
- return <div className="bg-white"><ProjectsHero/><div id="projects-content" className="sticky top-[76px] z-20 bg-white/95 backdrop-blur border-b border-slate-100"><div className="max-w-[1440px] mx-auto px-6 lg:px-10 flex gap-2 overflow-x-auto py-4">{categories.map(c=><button key={c} onClick={()=>setActive(c)} className={`shrink-0 px-4 py-2 text-sm rounded-lg border ${active===c?"bg-[#0057B8] text-white border-[#0057B8]":"border-slate-200 text-slate-600"}`}>{c}</button>)}</div></div><section className="max-w-[1440px] mx-auto px-6 lg:px-10 py-10 md:py-14">{loading?<p>Loading projects...</p>:error?<p role="alert" className="text-red-600">Projects are temporarily unavailable. Please try again later.</p>:filtered.length===0?<div className="rounded-[18px] border border-dashed border-slate-200 bg-[#F8F8F8] p-10 text-center"><h2 className="font-semibold text-xl">No public projects yet</h2><p className="text-slate-500 mt-3">Check back soon or contact us to discuss your project.</p><Link href="/contact" className="inline-block mt-5 bg-[#0057B8] text-white px-6 py-3 rounded-lg">Contact Us</Link></div>:<div className="grid md:grid-cols-2 gap-6">{filtered.map(p=><Link href={`/projects/${p.slug}`} key={p.id} className="group border border-slate-200 rounded-[18px] overflow-hidden hover:shadow-lg transition-shadow"><div className="h-60 bg-slate-100">{p.image?<img src={p.image} alt={p.title} className="w-full h-full object-cover"/>:<div className="h-full flex items-center justify-center text-slate-400">COREX IT</div>}</div><div className="p-6"><p className="text-[#0057B8] text-xs font-semibold">{p.category} {p.year?"· "+p.year:""}</p><h2 className="font-bold text-xl mt-2">{p.title}</h2><p className="text-slate-600 text-sm mt-3 line-clamp-3">{p.description}</p><div className="flex flex-wrap gap-2 mt-4">{(p.technologies||[]).slice(0,5).map(t=><span key={t} className="bg-slate-100 text-xs rounded-full px-3 py-1">{t}</span>)}</div><p className="text-[#0057B8] font-semibold text-sm mt-5">View Project →</p></div></Link>)}</div>}</section></div>;
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [active, setActive] = useState("All Projects");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+    fetch("/api/projects")
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Failed to load projects");
+        if (mounted) setProjects(data.projects || []);
+      })
+      .catch((err) => {
+        if (mounted) setError(err.message);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => { mounted = false; };
+  }, []);
+
+  const categories = useMemo(
+    () => ["All Projects", ...Array.from(new Set(projects.map((project) => project.category).filter(Boolean)))],
+    [projects]
+  );
+  const filtered = active === "All Projects" ? projects : projects.filter((project) => project.category === active);
+
+  return (
+    <div className="bg-white">
+      <ProjectsHero />
+      <div id="projects-content" className="sticky top-[76px] z-20 border-b border-slate-100 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-[1200px] gap-2 overflow-x-auto px-5 py-4 md:px-8">
+          {categories.map((category) => (
+            <button
+              key={category}
+              type="button"
+              onClick={() => setActive(category)}
+              className={`shrink-0 rounded-md border px-4 py-2 text-sm transition-colors ${active === category ? "border-[#0057B8] bg-[#0057B8] text-white" : "border-slate-200 text-slate-600 hover:border-[#0057B8]"}`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+      </div>
+      <section className="mx-auto max-w-[1200px] px-5 py-12 md:px-8 md:py-20">
+        {loading ? (
+          <p className="py-16 text-center text-slate-500">Loading projects...</p>
+        ) : error ? (
+          <p role="alert" className="py-16 text-center text-red-600">Projects are temporarily unavailable. Please try again later.</p>
+        ) : filtered.length === 0 ? (
+          <div className="border border-dashed border-slate-200 p-10 text-center">
+            <h2 className="text-xl font-semibold">No public projects yet</h2>
+            <p className="mt-3 text-slate-500">Check back soon or contact us to discuss your project.</p>
+            <Link href="/contact" className="mt-5 inline-block bg-[#0057B8] px-6 py-3 text-white">Contact Us</Link>
+          </div>
+        ) : (
+          <div className="border-t border-slate-200">
+            {filtered.map((project, index) => (
+              <article
+                key={project.id}
+                className="grid overflow-hidden border-b border-slate-200 lg:min-h-[430px] lg:grid-cols-2"
+              >
+                <div className={`flex flex-col justify-center px-5 py-10 sm:px-10 lg:px-12 lg:py-14 ${index % 2 === 1 ? "lg:order-2" : ""}`}>
+                  {project.logo ? (
+                    <img src={project.logo} alt={`${project.title} logo`} className="mb-6 max-h-12 max-w-40 object-contain object-left" />
+                  ) : (
+                    <p className="mb-5 text-sm font-bold uppercase tracking-[0.16em] text-[#0057B8]">{project.category || "COREX IT PROJECT"}</p>
+                  )}
+                  <h2 className="max-w-[470px] text-3xl font-bold leading-tight tracking-tight text-[#071A33] sm:text-4xl">{project.title}</h2>
+                  <p className="mt-5 max-w-[470px] text-[15px] leading-7 text-slate-600 line-clamp-6">{project.description}</p>
+                  <Link
+                    href={`/projects/${project.slug}`}
+                    className="mt-7 inline-flex w-fit items-center gap-3 bg-[#0057B8] px-6 py-3.5 text-xs font-bold uppercase tracking-wide text-white transition-colors hover:bg-[#003F8C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0057B8]"
+                  >
+                    Read Full Case Study <span aria-hidden="true">→</span>
+                  </Link>
+                </div>
+                <Link
+                  href={`/projects/${project.slug}`}
+                  aria-label={`View ${project.title} case study`}
+                  className={`group relative block min-h-[280px] overflow-hidden bg-[#EDF2F8] sm:min-h-[360px] lg:min-h-full ${index % 2 === 1 ? "lg:order-1" : ""}`}
+                >
+                  {project.image ? (
+                    <img
+                      src={project.image}
+                      alt={`${project.title} project preview`}
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-xl font-bold tracking-widest text-slate-400">COREX IT</div>
+                  )}
+                </Link>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
 }
