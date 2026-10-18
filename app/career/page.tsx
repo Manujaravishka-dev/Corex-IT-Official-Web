@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CareerSection } from "@/components/career-section";
+import { OpenCareerRoles } from "@/components/open-career-roles";
 
 export const metadata: Metadata = {
   title: "Careers | Corex IT",
@@ -11,6 +12,7 @@ export default function CareerPage() {
   return (
     <div className="bg-white">
       <CareerSection />
+      <OpenCareerRoles />
     </div>
   );
 }
