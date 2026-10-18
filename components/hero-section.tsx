@@ -102,16 +102,7 @@ export function HeroSection() {
         </div>
       </div>
 
-      <div className="absolute bottom-0 inset-x-0 z-20 pointer-events-none">
-        <div className="h-px bg-white/10" />
-        <div className="hidden md:flex items-center justify-between max-w-[1440px] mx-auto px-6 lg:px-10 py-2.5">
-          <span className="text-[10px] tracking-[0.14em] uppercase text-white/45">© 2026 Corex IT — Engineering excellence</span>
-          <span className="text-[10px] tracking-[0.14em] uppercase text-white/45 flex items-center gap-2">
-            <span className="w-1 h-1 rounded-full bg-emerald-400" />
-            All systems operational
-          </span>
-        </div>
-      </div>
+
     </section>
   );
 }
