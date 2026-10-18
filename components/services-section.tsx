@@ -39,7 +39,7 @@ const services = [
 export function ServicesSection() {
   return (
     <section id="services" className="relative bg-white overflow-hidden">
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-10 pt-16 md:pt-20 lg:pt-24 pb-12 md:pb-16">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-10 pt-6 md:pt-8 lg:pt-10 pb-12 md:pb-16">
         <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-bold leading-[1.05] tracking-[-0.03em] text-[#071A33] mb-4">
           Typical Services
         </h2>
