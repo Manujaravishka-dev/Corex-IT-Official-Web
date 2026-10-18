@@ -65,7 +65,8 @@ export async function POST(request: NextRequest) {
   if (!comment) errors.comment = "Testimonial is required";
   else if (comment.length < 10) errors.comment = "Testimonial must be at least 10 characters";
   else if (comment.length > 600) errors.comment = "Testimonial must be under 600 characters";
-  if ("imageUrl" in d && d.imageUrl) errors.imageUrl = "Image upload is not allowed for customer submissions";
+  const imageUrl = typeof d.imageUrl === "string" ? d.imageUrl : "";
+  if (imageUrl && (!imageUrl.startsWith("https://res.cloudinary.com/") || imageUrl.length > 2048)) errors.imageUrl = "Invalid uploaded image";
   if ("image" in d && d.image) errors.image = "Image upload is not allowed";
   if ("file" in d && d.file) errors.file = "File upload is not allowed";
   if ("photo" in d && d.photo) errors.photo = "Photo upload is not allowed";
@@ -113,6 +114,12 @@ export async function POST(request: NextRequest) {
         throw { code: 410, message: "This testimonial link has expired or has already been used." };
       }
 
+      const uploadSnap = await tx.get(db.collection("testimonial_uploads").doc(tokenHash));
+      const approvedImageUrl = uploadSnap.exists ? uploadSnap.data()?.imageUrl : "";
+      if (imageUrl && imageUrl !== approvedImageUrl) {
+        throw { code: 400, message: "Uploaded image does not match this invitation." };
+      }
+
       // Atomically create testimonial and mark invite used
       const testimonialRef = db.collection("testimonials").doc();
       const testimonialPayload = {
@@ -122,7 +129,7 @@ export async function POST(request: NextRequest) {
         comment,
         rating: ratingToStore,
         status: "pending" as const,
-        imageUrl: "",
+        imageUrl: imageUrl || "",
         createdAt: FieldValue.serverTimestamp(),
       };
       tx.set(testimonialRef, testimonialPayload);
