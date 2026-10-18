@@ -79,17 +79,17 @@ export function Navbar() {
             : "h-[90px] bg-white border-b border-slate-100"
         }`}
       >
-        <div className="max-w-[1440px] mx-auto h-full grid grid-cols-[1fr_auto] lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 xl:gap-6 px-5 md:px-8 xl:px-12 relative">
+        <div className="max-w-[1280px] mx-auto h-full flex items-center gap-3 px-4 md:px-6 lg:px-4 xl:px-5 relative">
           
           {/* Left Side: Brand Name */}
-          <Link href="/" className="flex items-center shrink-0 group justify-self-start">
-            <span className="text-[20px] lg:text-[22px] font-extrabold tracking-tight text-[#071A33] transition-transform duration-300 group-hover:scale-105">
+          <Link href="/" className="flex items-center shrink-0 group">
+            <span className="text-[18px] lg:text-[19px] font-extrabold tracking-tight text-[#071A33] transition-transform duration-300 group-hover:scale-105">
               COREX <span className="text-[#0057B8]">IT</span>
             </span>
           </Link>
 
           {/* Center navigation — compact Koyeb-inspired grouping, COREX branding */}
-          <div className="hidden lg:flex items-center justify-center gap-0.5 xl:gap-1 h-[54px] px-3 xl:px-4 rounded-[10px] bg-[#EDF2F8] justify-self-center">
+          <div className="hidden lg:flex flex-1 min-w-0 items-center justify-center gap-0.5 h-[54px] px-3 xl:px-4 rounded-[10px] bg-[#EDF2F8]">
             {navigationLinks.map((link) => {
               const active = pathname === link.href || (link.href !== "/" && pathname?.startsWith(link.href + "/"));
               return (
@@ -97,7 +97,7 @@ export function Navbar() {
                   key={link.label}
                   href={link.href}
                   aria-current={active ? "page" : undefined}
-                  className={`flex items-center justify-center h-[38px] px-2.5 xl:px-3.5 rounded-[7px] text-[13px] xl:text-[14px] font-medium whitespace-nowrap transition-colors duration-200 ${active ? "text-[#0056B8] bg-[#DCEAFB]" : "text-[#263B56] hover:text-[#0056B8] hover:bg-white/70"}`}
+                  className={`flex items-center justify-center h-[38px] px-2 xl:px-3 rounded-[7px] text-[13px] xl:text-[14px] font-medium whitespace-nowrap transition-colors duration-200 ${active ? "text-[#0056B8] bg-[#DCEAFB]" : "text-[#263B56] hover:text-[#0056B8] hover:bg-white/70"}`}
                 >
                   {link.label}
                 </Link>
@@ -106,10 +106,10 @@ export function Navbar() {
           </div>
 
           {/* Right Side: CTA Button + Mobile Toggle */}
-          <div className="flex items-center gap-3 justify-self-end">
+          <div className="flex items-center gap-3 shrink-0 ml-auto lg:ml-0">
             <Link
               href="/contact"
-              className="hidden md:inline-flex h-[54px] items-center gap-2 px-5 xl:px-7 rounded-[8px] bg-[#0056B8] text-white text-[14px] font-semibold hover:bg-[#00458F] transition-colors duration-200 shadow-[0_4px_0_#003B7A] whitespace-nowrap"
+              className="hidden md:inline-flex h-[54px] items-center gap-2 px-4 xl:px-6 rounded-[8px] bg-[#0056B8] text-white text-[14px] font-semibold hover:bg-[#00458F] transition-colors duration-200 shadow-[0_4px_0_#003B7A] whitespace-nowrap"
             >
               Let&apos;s Talk
               <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
